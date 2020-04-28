@@ -14,6 +14,9 @@
 # sh make_SLTF (subject_directory : ex. hogehoge/SHIMIZU) (LSTF_directory : hogehoge/LSTF)
 # ######################################################################
 
+# ファイルの上書き防止 && エラーが起きたら停止 && 変数の空文字列防止
+set -Ceu
+
 mkdir -p ../$1/HRTF ../$1/SLTF
 Bar="" 
 for LR in L R; do

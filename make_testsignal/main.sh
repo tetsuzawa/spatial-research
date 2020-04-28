@@ -9,6 +9,10 @@
 # ######################################################################
 # sh main (subject_directory : ex. hogehoge/SHIMIZU) (LSTF_directory : hogehoge/LSTF)
 # ######################################################################
+
+# ファイルの上書き防止 && エラーが起きたら停止 && 変数の空文字列防止
+set -Ceu
+
 if [ $# -ne 2 ]; then
   printf "\e[31;1m error: bad commandline format \n"
   printf " usage: SUBJECT mode(0/1)\e[m \n\n"
