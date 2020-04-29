@@ -14,6 +14,11 @@ import numpy as np
 class BestPEST:
     """
     Best-PEST法による移動音の方向弁別実験のためのクラス。
+    この実験におけるパラメータ最適化問題は統計学におけるロジスティック回帰と同意の問題である。
+    参考:
+        津村尚志 "最近の聴覚心理実験における新しい測定法"
+        Qiita   "多変量解析の超基本！知られざるロジスティック回帰分析のアルゴリズム導出"
+                https://qiita.com/NaoyaOura/items/6ad5142b0306476d9293
 
     Attributes
     ----------
@@ -49,7 +54,6 @@ class BestPEST:
         """
         PF: Psychometric Function
         移動音の方向弁別の実験結果がロジスティックス曲線なると仮定した心理測定関数
-        参考: 津村尚志 "最近の聴覚心理実験における新しい測定法"
 
         Parameters
         ----------
@@ -62,8 +66,11 @@ class BestPEST:
             心理測定関数の計算結果
         """
 
-        pf = 1 / (1 + np.exp((self.M - X) / self.S))
+        pf = 1 / (1 + np.exp(-self._W(X)))
         return pf
+
+    def _W(self, X: float) -> float:
+        return (self.M - X) / self.S
 
     def _W_M(self) -> float:
         """
