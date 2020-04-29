@@ -11,22 +11,12 @@ from best_PEST import BestPEST
 
 def main():
     bp = BestPEST()
+
     M = 20
     S = 1
-
-    def PF(X: float, M: float, S: float) -> float:
-        pf = 1 / (1 + np.exp(-W(X, M, S)))
-        return pf
-
-    def W(X: float, M: float, S: float) -> float:
-        return (X - M) / S
-
-    def inv_PF(Y: float, M: float, S: float) -> float:
-        return M + 2 * S * np.log(Y)
-
     r = range(1, 50)
     mock_x = list(r)
-    mock_y = list(map(PF, map(float, r), np.full(50, M), np.full(50, S)))
+    mock_y = list(map(BestPEST.PF, map(float, r), np.full(50, M), np.full(50, S)))
 
     for i in r:
         if i == 1:
@@ -36,14 +26,16 @@ def main():
         else:
             X = bp.M
 
-        is_correct = np.random.rand() < PF(X, M, S)
+        print(f"M:{bp.M}, S:{bp.S}")
+        is_correct = np.random.rand() < BestPEST.PF(X, M, S)
         bp.update(is_correct, X)
 
     Y = 0.75
-    print(f"mockの閾値 y=0,75に対するxの値は x={inv_PF(Y, M, S)}")
-    print(f"Best-PESTの閾値 y=0,75に対するxの値は x={inv_PF(Y, bp.M, bp.S)}")
+    print(f"mockの閾値 y=0.75に対するxの値は x={BestPEST.PF_inv(Y, M, S)}")
+    print(f"Best-PESTの閾値 y=0.75に対するxの値は x={BestPEST.PF_inv(Y, bp.M, bp.S)}")
+    print(f"Best-PESTの回答数: {bp.T}, 正答数: {bp.C}, 正答率: {bp.C / bp.T*100:3.1f}%")
 
-    y = list(map(PF, map(float, r), np.full(50, bp.M), np.full(50, bp.S)))
+    y = list(map(BestPEST.PF, map(float, r), np.full(50, bp.M), np.full(50, bp.S)))
 
     plt.plot(mock_x, mock_y, "r--")
     plt.plot(mock_x, y, "b--")
