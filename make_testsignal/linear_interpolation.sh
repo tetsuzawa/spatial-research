@@ -8,21 +8,28 @@
 # 2018
 # ######################################################################
 
-  Bar=""
-  for LR in L R; do
-    for Angle in `seq 0 5 355`; do
-      clear
-      echo "###################################################################"
-      echo "      Linear interpolation : $Angle - $(((Angle+5)%360)) deg."
-      echo "###################################################################"
-      [ $((Angle%20)) = 0 ] && Bar=$Bar"█"
-      Prog="$(((Angle+5)*100/360/2))% |$Bar"
-      echo "$Prog\n"
+# ファイルの上書き防止 && エラーが起きたら停止 && 変数の空文字列防止
+set -Ceu
 
-      for i in `seq 4 1`; do
-        linear_inpo_hrir_using_ATD ../$1/SLTF/SLTF_${Angle}_${LR}.DDB ../$1/SLTF/SLTF_$(((Angle+5)%360))_${LR}.DDB \
-          0.$((i*2)) ../$1/SLTF/SLTF_$((Angle+5-i))_${LR}.DDB > /dev/null
-          echo "interpolation ${Angle} - $(((Angle+5)%360)) => $((5-i))"
-      done
+if [ $# -ne 1 ]; then
+  printf "\e[31;1m error: bad commandline format \n"
+  printf " usage: SUBJECT mode(0/1)\e[m \n\n"
+  exit
+fi
+
+
+SUBJECT_DIR=$1
+
+echo "###################################################################"
+echo "                      Linear interpolating ...                     "
+echo "###################################################################"
+for LR in L R; do
+  for Angle in `seq 0 50 3550`; do
+    for i in `seq 1 9`; do
+      echo "0.$((10-i))"
+      linear_inpo_hrir_using_ATD ${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB \
+        0.$((10-i)) ${SUBJECT_DIR}/SLTF/SLTF_$((Angle+i*10/2))_${LR}.DDB > /dev/null &
     done
   done
+done
+wait

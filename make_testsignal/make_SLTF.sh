@@ -13,27 +13,50 @@
 # ######################################################################
 # sh make_SLTF (subject_directory : ex. hogehoge/SHIMIZU) (LSTF_directory : hogehoge/LSTF)
 # ######################################################################
+# 処理を並列化
+# Takizawa Tetsu (tt20805)
+# 2020.5
+# ######################################################################
 
 # ファイルの上書き防止 && エラーが起きたら停止 && 変数の空文字列防止
 set -Ceu
 
-mkdir -p ../$1/HRTF ../$1/SLTF
-Bar="" 
-for LR in L R; do
-    for Angle in `seq 0 5 355`; do
-        clear
-        echo "###################################################################"
-        echo "                       Calculating SLFT ......    "
-        echo "####################################################################"
-        #Progress bar
-        [ $((Angle%20)) = 0 ] && Bar=$Bar"█"
-        Prog="$(((Angle+5)*100/360/2))% |$Bar"
-        echo "$Prog\n"
+if [ $# -ne 2 ]; then
+  printf "\e[31;1m error: bad commandline format \n"
+  printf " usage: SUBJECT mode(0/1)\e[m \n\n"
+  exit
+fi
 
-        speaker_num=$((Angle/5%18+1))
-        timeconvo $1/SSTF/cSSTF_${Angle}_${LR}.DDB LSTF/cinv_cLSTF_${speaker_num}.DDB $1/HRTF/HRTF_${Angle}_${LR}.DDB
-        #timeconvo $1/SSTF/cSSTF_${Angle}_${LR}.DDB LSTF/cinv_cLSTF_${speaker_num}.DDB $1/HRTF/HRTF_${Angle}_${LR}.DDB
-        timeconvo $1/HRTF/HRTF_${Angle}_${LR}.DDB $1/RSTF/cinv_cRSTF_${LR}.DDB $1/SLTF/SLTF_${Angle}_${LR}.DDB
-        #timeconvo $1/HRTF/HRTF_${Angle}_${LR}.DDB $1/ECTF/cinv_cECTF_${LR}.DDB $1/SLTF/SLTF_${Angle}_${LR}.DDB
-    done
+
+SUBJECT_DIR=$1
+LSTF_DIR=$2
+
+mkdir -p ${SUBJECT_DIR}/HRTF ${SUBJECT_DIR}/SLTF
+
+#--------------------------------- HRTFを生成 ---------------------------------#
+echo "###################################################################"
+echo "                       Calculating HRTF ......    "
+echo "####################################################################"
+for LR in L R; do
+  for Angle in `seq 0 5 355`; do
+    speaker_num=$((Angle/5%18+1))
+    timeconvo ${SUBJECT_DIR}/SSTF/cSSTF_${Angle}_${LR}.DDB LSTF/cinv_cLSTF_${speaker_num}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB &
+  done
 done
+wait
+#-----------------------------------------------------------------------------#
+echo "###################################################################"
+
+#--------------------------------- SLTFを生成 ---------------------------------#
+echo "###################################################################"
+echo "###################################################################"
+echo "                       Calculating SLFT ......    "
+echo "####################################################################"
+for LR in L R; do
+  for Angle in `seq 0 5 355`; do
+    speaker_num=$((Angle/5%18+1))
+    timeconvo ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$((Angle*10))_${LR}.DDB &
+  done
+done
+wait
+#-----------------------------------------------------------------------------#
