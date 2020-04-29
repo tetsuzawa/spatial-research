@@ -50,7 +50,8 @@ class BestPEST:
         self.gradient_vec = np.zeros(shape=2, dtype=np.float)
         self.hessian_mat = np.zeros(shape=(2, 2), dtype=np.float)
 
-    def _PF(self, X: float) -> float:
+    @staticmethod
+    def PF(X: float, M: float, S: float) -> float:
         """
         PF: Psychometric Function
         移動音の方向弁別の実験結果がロジスティックス曲線なると仮定した心理測定関数
@@ -59,6 +60,10 @@ class BestPEST:
         ----------
         X: float
             刺激レベル（移動角度や移動速度など）
+        M: float
+            曲線の中点。最尤法によってXをMに近づけていく。
+        S: float
+            曲線の広がり。通常は定数で演算。
 
         Returns
         -------
@@ -66,11 +71,36 @@ class BestPEST:
             心理測定関数の計算結果
         """
 
-        pf = 1 / (1 + np.exp(-self._W(X)))
+        def _W(X: float, M: float, S: float) -> float:
+            return (X - M) / S
+
+        pf = 1 / (1 + np.exp(-_W(X, M, S)))
         return pf
 
-    def _W(self, X: float) -> float:
-        return (X - self.M) / self.S
+    @staticmethod
+    def PF_inv(Y: float, M: float, S: float) -> float:
+        """
+        PF_inv: Inverse Psychometric Function
+        PFの逆関数。
+        閾値を求めるときに使う。
+
+        Parameters
+        ----------
+        Y: float
+            弁別正答確率。y=PF(X;M,S)。
+        M: float
+            曲線の中点。最尤法によってXをMに近づけていく。
+        S: float
+            曲線の広がり。通常は定数で演算。
+
+        Returns
+        -------
+        PF(X; M,S): float
+            心理測定関数の計算結果
+        """
+
+        pf_inv = M + 2 * S * np.log(Y)
+        return pf_inv
 
     def _W_M(self) -> float:
         """
@@ -167,10 +197,9 @@ class BestPEST:
         self.T += 1
         if is_correct:
             self.C += 1
-        self.likelihood = self._PF(X)
+        self.likelihood = self.PF(X, self.M, self.C)
         self.gradient_vec += np.array([self._L_M(), self._L_S(X)])
         self.hessian_mat += np.array([[self._L_MM(), self._L_MS(X)],
                                       [self._L_MS(X), self._L_SS(X)]])
         u = np.array([self.M, self.S]).T - np.linalg.inv(self.hessian_mat) @ self.gradient_vec.T
         self.M, self.S = u
-
