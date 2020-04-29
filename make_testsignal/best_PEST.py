@@ -46,7 +46,7 @@ class BestPEST:
         self.T = 0
         self.C = 0
         self.M = 0.0
-        self.S = 0.0
+        self.S = 1.0
         self.gradient_vec = np.zeros(shape=2, dtype=np.float)
         self.hessian_mat = np.zeros(shape=(2, 2), dtype=np.float)
 
@@ -160,7 +160,7 @@ class BestPEST:
         ----------
         is_correct: bool
             回答が正解か否か
-        X: bool
+        X: float
             刺激レベル（移動角度や移動速度など）
         """
         self.k += 1
@@ -173,3 +173,4 @@ class BestPEST:
                                       [self._L_MS(X), self._L_SS(X)]])
         u = np.array([self.M, self.S]).T - np.linalg.inv(self.hessian_mat) @ self.gradient_vec.T
         self.M, self.S = u
+
