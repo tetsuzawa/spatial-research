@@ -1,0 +1,49 @@
+% latex uft-8
+\documentclass[uplatex, a4paper, 10pt, oneside, twocolumn]{jsarticle}
+%
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{here}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{comment}
+\usepackage[labelsep=space]{caption}
+\usepackage[subrefformat=parens， labelsep=space]{subcaption}
+\usepackage{siunitx}
+\usepackage{bm}
+
+\captionsetup{compatibility=false}
+%J\usepackage{amsmath、 amssymb}
+%J\usepackage{bm}
+%\usepackage{graphicx}
+%\usepackage{ascmac}
+%
+\setlength{\textwidth}{\fullwidth}
+\setlength{\textheight}{40\baselineskip}
+\addtolength{\textheight}{\topskip}
+\setlength{\voffset}{-0.55in}
+
+
+\title{math}
+\author{電気電子工学科 5年 19番 瀧澤哲}
+\date{2020年5月1日}
+%
+\begin{document}
+% START DOCUMENT
+%
+
+\maketitle
+
+\section*{解答}
+  \subsection*{ステップ1 尤度関数を計算}
+    \begin{equation}
+      PF(X;M,S) = \frac{1}{1 + \exp \left(\frac{M-X}{S}\right)}
+    \end{equation}
+    \begin{equation}
+      \begin{split}
+        P &= \prod_{i=0}^n PF(X_i; M)^C_i * {1 - PF(X_i; M)}^(T_i - C_i)
+          &= \prod_{i=0}^n \left(\frac{1}{1+\exp \left(\flac{M-X_i}{S}\right)}\right)^C_i * \left\{1 - \frac{1}{1+\exp \left(\flac{M-X_i}{S}\right)}\right\}^(T_i - C_i)
+      \end{split}
+    \end{equation}
+
+% end document
+\end{document}
