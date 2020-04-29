@@ -7,7 +7,7 @@
 # 作成者:下川原綾汰
 # 作成年:2018
 # ##################################################
-# プログラムをリファクターした
+# プログラムをリファクタした
 #
 # 作成者:瀧澤哲
 # 作成年:2020
@@ -23,7 +23,8 @@ def main():
     args = sys.argv
 
     if len(args) != 7:
-        print("usage: fadein-fadeout.py subject import_file(.DSB) movement_width move_velocity end_angle outdir")
+        print(
+            "usage: continuous_move_judge_dv.py subject import_file(.DSB) move_width move_velocity end_angle outdir")
         sys.exit()
 
     # 移動のパラメータ
@@ -68,8 +69,7 @@ def main():
 
             for angle in range(movement_angle * 2 - 1):
                 data_angle = angle % ((movement_width * 2) * 2)  # ノコギリ波を作成
-                if data_angle > (movement_width * 2): data_angle = (
-                                                                               movement_width * 2) * 2 - data_angle  # ノコギリ波から三角波を作成
+                if data_angle > (movement_width * 2): data_angle = (movement_width * 2) * 2 - data_angle  # ノコギリ波から三角波を作成
                 if direction is 'cc': data_angle = -data_angle
                 data_angle = data_angle / 2
                 if data_angle < 0: data_angle += 360  # 角度が負のとき360を加算
