@@ -70,7 +70,7 @@ class BestPEST:
         return pf
 
     def _W(self, X: float) -> float:
-        return (self.M - X) / self.S
+        return (X - self.M) / self.S
 
     def _W_M(self) -> float:
         """
