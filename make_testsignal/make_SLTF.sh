@@ -40,7 +40,7 @@ echo "####################################################################"
 for LR in L R; do
   for Angle in `seq 0 5 355`; do
     speaker_num=$((Angle/5%18+1))
-    timeconvo ${SUBJECT_DIR}/SSTF/cSSTF_${Angle}_${LR}.DDB LSTF/cinv_cLSTF_${speaker_num}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB &
+    timeconvo ${SUBJECT_DIR}/SSTF/cSSTF_${Angle}_${LR}.DDB ${LSTF_DIR}/cinv_cLSTF_${speaker_num}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB &
   done
 done
 wait

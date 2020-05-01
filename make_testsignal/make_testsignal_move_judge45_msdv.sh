@@ -28,7 +28,7 @@ SUBJECT_DIR=$1
 # データ保存用ディレクトリの作成
 mkdir -p ${SUBJECT_DIR}/TS ${SUBJECT_DIR}/ANSWER input_files
 
-sound=w21s.DSB
+WHITE_NOISE=w21s.DSB
 move_width_list=`seq 1 30`
 move_velocity_list=`seq 1 50`
 end_angle_list=(45)
@@ -58,7 +58,7 @@ echo "      Adjusting max sound pressure ...                             "
 echo "###################################################################"
 echo
 
-echo "" > input_files/input_file_move_judge.dat
+echo "" >| input_files/input_file_move_judge.dat
 for move_width in ${move_width_list}; do
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do

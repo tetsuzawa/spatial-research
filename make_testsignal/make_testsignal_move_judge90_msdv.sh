@@ -29,7 +29,7 @@ SUBJECT_DIR=$1
 mkdir -p ${SUBJECT_DIR}/TS ${SUBJECT_DIR}/ANSWER input_files
 
 
-sound=w35s.DSB
+WHITE_NOISE=w35s.DSB
 move_width_list=`seq 1 60`
 move_velocity_list=`seq 1 50`
 end_angle_list=(90)
@@ -59,7 +59,7 @@ echo "      Adjusting max sound pressure ...                             "
 echo "###################################################################"
 echo
 
-echo "" > input_files/input_file_move_judge.dat
+echo "" >| input_files/input_file_move_judge.dat
 for move_width in ${move_width_list}; do
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do

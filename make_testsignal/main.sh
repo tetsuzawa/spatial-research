@@ -27,7 +27,7 @@ mkdir -p ${SUBJECT_DIR}/TS ${SUBJECT_DIR}/ANSWER
 echo "Running make_SLTF.sh ..."
 bash make_SLTF.sh ${SUBJECT_DIR} ${LSTF_DIR} # HRTFとSLTFの生成
 echo "Running liner_interpolation.sh ..."
-bash liner_interpolation.sh ${SUBJECT_DIR} # SLTFの線形補間
+bash linear_interpolation.sh ${SUBJECT_DIR} # SLTFの線形補間
 echo "Running make_testsignal_move_judge0_msdv.sh ..."
 bash make_testsignal_move_judge0_msdv.sh ${SUBJECT_DIR} # 移動音の生成
 echo "Running make_testsignal_move_judge45_msdv.sh ..."
