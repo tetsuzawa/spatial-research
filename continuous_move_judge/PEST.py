@@ -28,6 +28,8 @@ class PEST:
     :cvar _upper: 刺激レベルの変化方向（易化方向）.
 
     :ivar Xt: 刺激レベルの目標値Xt. 閾値. これを求める.
+    :ivar T: 総試行回数.
+    :ivar C: 総正答数.
     :ivar Pt: 刺激レベルの目標値Ltに対する特定応答の出現率. 閾値. 強制選択法（2IFC）なら0.75, Yes/No法なら0.5.
     :ivar dx: 刺激変化幅.
     :ivar _min_dx: 最小刺激変化幅. 刺激幅dxが最小刺激幅min_dxとなったときに実験を終了.
@@ -51,8 +53,10 @@ class PEST:
         :param Pt: 刺激レベルの目標値Ltに対する特定応答の出現率. 閾値. 強制選択法（2IFC）なら0.75, Yes/No法なら0.5.
         :param W: Deviation limit. 刺激レベル更新の判断に使用する. 通常1.0~2.0（推奨値1.0）.
         """
-        self.Xt = 0
+        self.Xt = 0.
         self.Pt = Pt
+        self.T = 0
+        self.C = 0
         self.dx = init_dx  # 刺激変化幅.
         self._min_dx = min_dx  # 最小刺激変化幅. 刺激幅dxが最小刺激幅min_dxとなったときに実験を終了する.
         self._max_dx = init_dx * 2
@@ -64,15 +68,17 @@ class PEST:
         self._consecutive_C = 0  # 一定の刺激レベルXで繰り返された正答数
         self._W = W  # deviation limit. 1.0 <= W <= 2.0
 
-    def update(self, is_correct, X: int) -> int:
+    def update(self, is_correct: bool, X: float) -> float:
         """(a)刺激レベルを変える時期を判定し, 変化後の刺激レベルを返す.
 
         :param is_correct: 刺激レベル.被験者の回答が正答か否か.
         :param X: 刺激レベル.
         :return: 更新後の刺激レベル.
         """
+        self.T += 1
         self._consecutive_T += 1
         if is_correct:
+            self.C += 1
             self._consecutive_C += 1
 
         W = self._W
@@ -140,6 +146,31 @@ class PEST:
         """
         return self.dx == self._min_dx
 
+    @staticmethod
+    def _Z(X: float, M: float, S: float) -> float:
+        return (X - M) / S
+
+    @staticmethod
+    def PF(X: float, M: float, S: float, a: float, b: float) -> float:
+        """心理測定関数（ロジスティックス曲線と仮定）
+        """
+        sigmoid_range = 34.538776394910684
+        z = PEST._Z(X, M, S)
+        # オーバーフローを避ける
+        if z <= -sigmoid_range:
+            return 1e-15
+        if z >= sigmoid_range:
+            return 1.0 - 1e-15
+        pf = a / (1 + np.exp(-z)) + b
+        return pf
+
+    @staticmethod
+    def PF_inv(P: float, M: float, S: float, a: float, b: float) -> float:
+        """心理測定関数の逆関数
+        """
+        pf_inv = M - S * np.log(a / (P - b) - 1)
+        return pf_inv
+
 
 # -------------------------- Example -------------------------- #
 
@@ -149,26 +180,6 @@ def example():
 
     心理測定関数PFの閾値Ptに対する刺激レベルの閾値Xtを推定する.
     """
-
-    def Z(X: float, M: float, S: float) -> float:
-        return (X - M) / S
-
-    def PF(X: float, M: float, S: float, a: float, b: float) -> float:
-        """心理測定関数（ロジスティックス曲線と仮定）"""
-        sigmoid_range = 34.538776394910684
-        z = Z(X, M, S)
-        # オーバーフローを避ける
-        if z <= -sigmoid_range:
-            return 1e-15
-        if z >= sigmoid_range:
-            return 1.0 - 1e-15
-        pf = a / (1 + np.exp(-z)) + b
-        return pf
-
-    def PF_inv(P: float, M: float, S: float, a: float, b: float) -> float:
-        """心理測定関数の逆関数"""
-        pf_inv = M - S * np.log(a / (P-b) - 1)
-        return pf_inv
 
     # 刺激レベルの対象範囲
     mock_x = list(range(1, 50))
@@ -181,8 +192,8 @@ def example():
     # 心理測定関数のパラメータの真値（強制選択法, 2IFC）
     true_M = 20
     true_S = 5
-    true_a = 1/2  # 傾き1/2
-    true_b = 1/2  # バイアス1/2
+    true_a = 1 / 2  # 傾き1/2
+    true_b = 1 / 2  # バイアス1/2
     true_Pt = 0.75
 
     # PEST法のインスタンス生成
@@ -207,7 +218,7 @@ def example():
             break
 
     # 推定結果の出力
-    true_Xt = PF_inv(true_Pt, true_M, true_S, true_a, true_b)
+    true_Xt = PEST.PF_inv(true_Pt, true_M, true_S, true_a, true_b)
     print(f"{T}回目の回答で実験が終了しました.")
     print(f"刺激レベルの閾値. 真値: {true_Xt}, 推定値: {X}")
 
@@ -215,7 +226,7 @@ def example():
     y = [PF(x_tmp, true_M, true_S, true_a, true_b) for x_tmp in mock_x]
     plt.plot(mock_x, y, color="red", label=f"True PF")
     plt.hlines(y=true_Pt, xmin=0, xmax=true_Xt, linestyles="--")
-    plt.vlines(x=true_Xt, ymin=1/2, ymax=true_Pt, linestyles="--", label="True threshold")
+    plt.vlines(x=true_Xt, ymin=1 / 2, ymax=true_Pt, linestyles="--", label="True threshold")
     plt.plot([X], [true_Pt], "o", color="orange", label="Estimated threshold")
     plt.xlabel("Stimulation level X")
     plt.ylabel("PF(X)")
@@ -225,7 +236,7 @@ def example():
 
     # 刺激レベルの軌跡
     plt.plot(list(range(1, T + 2)), X_list, "o-")
-    plt.hlines(y=true_Xt, xmin=0, xmax=T+2, linestyles="--")
+    plt.hlines(y=true_Xt, xmin=0, xmax=T + 2, linestyles="--")
     plt.xlabel("Numbers of trials T")
     plt.ylabel("Stimulation level X")
     plt.title("Path of stimulation level")
