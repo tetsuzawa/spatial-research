@@ -16,7 +16,7 @@ class PEST:
     """PEST法による実験のためのクラス
 
     PEST法 (Parameter Estimation by Sequential Testing) は心理物理測定法のうちの適応法の一つである.
-    (a)刺激レベルを変える時期と, (b)刺激レベルの変化規則によって刺激レベルを逐次的に変化させて実験を行う.
+    (a)刺激レベルを変える時期と, (b)刺激レベルの変化規則によって刺激レベルを逐次的に変化させて閾値を推定する.
 
     参考:
         津村尚志 "最近の聴覚心理実験における新しい測定法"（1984）
@@ -69,7 +69,7 @@ class PEST:
         self._W = W  # deviation limit. 1.0 <= W <= 2.0
 
     def update(self, is_correct: bool, X: float) -> float:
-        """(a)刺激レベルを変える時期を判定し, 変化後の刺激レベルを返す.
+        """(a)刺激レベルを変える時期を判定し, 更新後の刺激レベルを返す.
 
         :param is_correct: 刺激レベル.被験者の回答が正答か否か.
         :param X: 刺激レベル.
@@ -206,7 +206,7 @@ def example():
     while True:
         T += 1
         # 被験者の回答の正誤
-        is_correct = np.random.rand() < PF(X, true_M, true_S, true_a, true_b)
+        is_correct = np.random.rand() < PEST.PF(X, true_M, true_S, true_a, true_b)
 
         # 刺激レベルの更新
         X = pest.update(is_correct, X)
@@ -223,7 +223,7 @@ def example():
     print(f"刺激レベルの閾値. 真値: {true_Xt}, 推定値: {X}")
 
     # 心理測定関数の閾値をプロット
-    y = [PF(x_tmp, true_M, true_S, true_a, true_b) for x_tmp in mock_x]
+    y = [PEST.PF(x_tmp, true_M, true_S, true_a, true_b) for x_tmp in mock_x]
     plt.plot(mock_x, y, color="red", label=f"True PF")
     plt.hlines(y=true_Pt, xmin=0, xmax=true_Xt, linestyles="--")
     plt.vlines(x=true_Xt, ymin=1 / 2, ymax=true_Pt, linestyles="--", label="True threshold")
