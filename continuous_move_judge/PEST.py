@@ -57,16 +57,16 @@ class PEST:
         self.Pt = Pt
         self.T = 0
         self.C = 0
-        self.dx = init_dx  # 刺激変化幅.
-        self._min_dx = min_dx  # 最小刺激変化幅. 刺激幅dxが最小刺激幅min_dxとなったときに実験を終了する.
+        self.dx = init_dx
+        self._min_dx = min_dx
         self._max_dx = init_dx * 2
         self._doubled_dx = False
         self._switched_direction_by_doubled_dx = False
-        self._pre_stimulation_level_direction = self._lower  # lower:False or upper:True
-        self._repeated_num = 1  # 連続で同じ回答が繰り返された回数. 最小値:1,
-        self._consecutive_T = 0  # 一定の刺激レベルXで繰り返された回答数
-        self._consecutive_C = 0  # 一定の刺激レベルXで繰り返された正答数
-        self._W = W  # deviation limit. 1.0 <= W <= 2.0
+        self._pre_stimulation_level_direction = self._lower
+        self._repeated_num = 1
+        self._consecutive_T = 0
+        self._consecutive_C = 0
+        self._W = W
 
     def update(self, is_correct: bool, X: float) -> float:
         """(a)刺激レベルを変える時期を判定し, 更新後の刺激レベルを返す.

@@ -54,8 +54,8 @@ class BestPEST:
         self.C = 0
         self._XTCs = np.empty([0, 3], float)
         self._T_end = T_end
-        self._eta = eta  # 学習率
-        self._eps = eps  # 学習のストップ判定に用いる定数
+        self._eta = eta
+        self._eps = eps
 
     def update(self, is_correct: bool, X: float) -> float:
         """最尤推定と最急降下法によって閾値を推定し, 更新後の刺激レベルを返す.
