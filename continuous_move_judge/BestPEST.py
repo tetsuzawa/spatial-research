@@ -35,7 +35,7 @@ class BestPEST:
     :ivar _eps: 最急降下法によってパラメータを推定するときのループ終了閾値.
     """
 
-    def __init__(self, init_M=30, init_S=5, a=0.5, b=0.5, T_end=50, eta=0.05, eps=1e-6):
+    def __init__(self, init_M=30.0, init_S=1.0, a=0.5, b=0.5, T_end=50, eta=0.05, eps=1e-6):
         """初期化関数
 
         :param init_M: 推定閾値（パラメータ）の初期値.
@@ -192,13 +192,13 @@ def example():
     X_list = []
 
     # 心理測定関数のパラメータの真値（強制選択法, 2IFC）
-    true_M = 20
-    true_S = 5
+    true_M = 20.0
+    true_S = 1.5
     true_a = 1 / 2  # 傾き1/2
     true_b = 1 / 2  # バイアス1/2
     true_Pt = 0.75
     # 試行終了回数
-    T_end = 60
+    T_end = 50
 
     # BestPEST法のインスタンス生成
     best_pest = BestPEST(T_end=T_end)

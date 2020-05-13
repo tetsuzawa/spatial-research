@@ -191,7 +191,7 @@ def example():
 
     # 心理測定関数のパラメータの真値（強制選択法, 2IFC）
     true_M = 20
-    true_S = 5
+    true_S = 1.5
     true_a = 1 / 2  # 傾き1/2
     true_b = 1 / 2  # バイアス1/2
     true_Pt = 0.75
