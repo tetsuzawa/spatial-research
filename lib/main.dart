@@ -29,8 +29,8 @@ class MyApp extends StatelessWidget {
 
 class _AngleSenderState extends State<AngleSender> {
   bool _rotation = true;
-  int startAngle = -1;
-  int endAngle = -1;
+  int startDeg = -1;
+  int endDeg = -1;
 
   void _handlePressRotationButton() {
     setState(() {
@@ -41,14 +41,14 @@ class _AngleSenderState extends State<AngleSender> {
   void _handlePressCircleElementsButton(int deg) {
     print("pressed $deg");
     setState(() {
-      if (this.startAngle == -1) {
+      if (this.startDeg == -1) {
         // 最初にボタンが押されたらstartをセット
         print("start angle $deg");
-        this.startAngle = deg;
+        this.startDeg = deg;
       } else {
         //二回目ならendをセット、pathを計算
         print("end angle $deg");
-        this.startAngle = deg;
+        this.startDeg = deg;
         // TODO
       }
     });
@@ -139,43 +139,27 @@ class AngleSender extends StatefulWidget {
 }
 
 class ArcPainter extends CustomPainter {
-  double startAngle = 30.0;
-  double endAngle = 260.0;
+  double startDeg = 30.0;
+  double endDeg = 260.0;
   bool rotation = false;
 
   //         <-- CustomPainter class
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTRB(30, 30, 770, 770);
-    double startAngleRad = startAngle * math.pi / 180 - math.pi / 2;
-    double sweepAngleRad;
-    if (startAngle >= 180) {
-      if (startAngle < endAngle) {
-        if (rotation) {
-          sweepAngleRad = (endAngle - startAngle) * math.pi / 180;
-        } else {
-          sweepAngleRad = -(360 - endAngle + startAngle) * math.pi / 180;
-        }
+    double startRad = startDeg * math.pi / 180 - math.pi / 2;
+    double sweepRad;
+    if (startDeg < endDeg) {
+      if (rotation) {
+        sweepRad = (endDeg - startDeg) * math.pi / 180;
       } else {
-        if (rotation) {
-          sweepAngleRad = (360 - startAngle + endAngle) * math.pi / 180;
-        } else {
-          sweepAngleRad = (endAngle - startAngle) * math.pi / 180;
-        }
+        sweepRad = -(360 - endDeg + startDeg) * math.pi / 180;
       }
     } else {
-      if (startAngle < endAngle) {
-        if (rotation) {
-          sweepAngleRad = (endAngle - startAngle) * math.pi / 180;
-        } else {
-          sweepAngleRad = -(360 - endAngle + startAngle) * math.pi / 180;
-        }
+      if (rotation) {
+        sweepRad = (360 - startDeg + endDeg) * math.pi / 180;
       } else {
-        if (rotation) {
-          sweepAngleRad = (360 - startAngle + endAngle) * math.pi / 180;
-        } else {
-          sweepAngleRad = (endAngle - startAngle) * math.pi / 180;
-        }
+        sweepRad = (endDeg - startDeg) * math.pi / 180;
       }
     }
     final useCenter = false;
@@ -186,7 +170,7 @@ class ArcPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 60;
 
-    canvas.drawArc(rect, startAngleRad, sweepAngleRad, useCenter, paint);
+    canvas.drawArc(rect, startRad, sweepRad, useCenter, paint);
   }
 
   @override
