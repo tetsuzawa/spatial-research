@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+import 'http_handler.dart';
+
 void main() => runApp(MyApp()); /*1*/
 
 class MyApp extends StatelessWidget {
@@ -31,9 +33,13 @@ class _AngleSenderState extends State<AngleSender> {
   bool _rotation = false;
   int startDeg = -1;
   int endDeg = -1;
-  ArcPainter arcPainter = ArcPainter(Colors.lightBlueAccent[100]);
   ArcPainter startPainter = ArcPainter(Colors.grey[300]);
+  ArcPainter arcPainter = ArcPainter(Colors.lightBlueAccent[100]);
   ArcPainter endPainter = ArcPainter(Colors.blue);
+
+  bool isLoading = false;
+  setLoading(bool state) => setState(() => isLoading = state);
+  Future<MessageResponse> futureMessageResponse;
 
   void _handlePressRotationButton() {
     setState(() {
@@ -53,22 +59,39 @@ class _AngleSenderState extends State<AngleSender> {
     });
   }
 
-  void _handlePressSubmitButton() {
+  void _handlePressSubmitButton()async {
+    setState(() {
+      setLoading(true);
+    });
     //TODO
+    var  a = await fetchMessageResponse();
+    setState(() {
+        setLoading(false);
+    });
+    futureMessageResponse = fetchMessageResponse();
   }
 
   void _calcInitialRotation() {
-    print("called");
-    if ((this.endDeg - this.startDeg).abs() <=
-        (360 - this.endDeg + this.startDeg).abs()) {
-      this._rotation = true;
-    } else {
-      this._rotation = false;
-    }
+    setState(() {
+      if (startDeg < endDeg) {
+        if ((this.endDeg - this.startDeg).abs() <=
+            (360 - this.endDeg + this.startDeg).abs()) {
+          this._rotation = true;
+        } else {
+          this._rotation = false;
+        }
+      } else {
+        if ((this.endDeg - this.startDeg).abs() <=
+            (360 - this.startDeg + this.endDeg).abs()) {
+          this._rotation = false;
+        } else {
+          this._rotation = true;
+        }
+      }
+    });
   }
 
   void _handlePressCircleElementsButton(int deg) {
-    print("pressed $deg");
     setState(() {
       if (this.startDeg == -1) {
         // 最初にボタンが押されたらstartをセット
@@ -81,7 +104,6 @@ class _AngleSenderState extends State<AngleSender> {
         //二回目ならendをセット、pathを計算
         print("end angle $deg");
         this.endDeg = deg;
-        // TODO
         _calcInitialRotation();
         this
             .arcPainter
@@ -94,12 +116,12 @@ class _AngleSenderState extends State<AngleSender> {
     });
   }
 
-  List<Positioned> createCircleElementsButton(int numElements, double radius) {
+  List<Positioned> _createCircleElements(int numElements, double radius) {
     // リストの初期化
     var circleElements = new List<Positioned>();
     // 要素数から角度を計算
     var angle = 360.0 / numElements;
-    // ボタンの直径
+    // ボタンの半径
     const elemRadius = 30.0;
 
     for (int i = 0; i < numElements; i++) {
@@ -117,7 +139,6 @@ class _AngleSenderState extends State<AngleSender> {
           width: elemRadius * 2,
           height: elemRadius * 2,
           child: FlatButton(
-            key: Key("angle-${deg.toString()}"),
             child: Text(deg.toString()),
             onPressed: () => {_handlePressCircleElementsButton(deg)},
             shape: CircleBorder(),
@@ -141,12 +162,21 @@ class _AngleSenderState extends State<AngleSender> {
                 Container(
                   width: circleElementsFieldWidth,
                   height: circleElementsFieldWidth,
-                  child: Text('word'),
+                  child: FutureBuilder<MessageResponse>(
+                    future: futureMessageResponse,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Text(snapshot.data.message);
+                      } else if (snapshot.hasError) {
+                        return Text("${snapshot.error}");
+                      }
+                      // By default, show a loading spinner.
+                      return CircularProgressIndicator();
+                    },
+                  ),
                   alignment: Alignment.center,
                 ),
                 CustomPaint(
-//                  size: Size(circleElementsFieldWidth / 2,
-//                      circleElementsFieldWidth / 2),
                   painter: arcPainter,
                 ),
                 CustomPaint(
@@ -155,7 +185,7 @@ class _AngleSenderState extends State<AngleSender> {
                 CustomPaint(
                   painter: endPainter,
                 ),
-                ...createCircleElementsButton(36, circleElementsFieldWidth / 2),
+                ..._createCircleElements(36, circleElementsFieldWidth / 2),
               ],
             ),
             /* ----------------- Circle Elements -----------------*/
@@ -178,6 +208,7 @@ class _AngleSenderState extends State<AngleSender> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
+                    /* ----------------- Clear Button -----------------*/
                     RaisedButton.icon(
                       icon: Icon(
                         Icons.clear,
@@ -190,6 +221,8 @@ class _AngleSenderState extends State<AngleSender> {
                       shape: StadiumBorder(),
                       onPressed: _handlePressClearButton,
                     ),
+                    /* ----------------- Clear Button -----------------*/
+                    /* ----------------- Submit Button -----------------*/
                     RaisedButton.icon(
                       icon: Icon(
                         Icons.send,
@@ -200,8 +233,9 @@ class _AngleSenderState extends State<AngleSender> {
                       textColor:
                           Theme.of(context).primaryTextTheme.bodyText1.color,
                       shape: StadiumBorder(),
-                      onPressed: _handlePressSubmitButton,
+                      onPressed: isLoading ? null : _handlePressSubmitButton,
                     ),
+                    /* ----------------- Submit Button -----------------*/
                   ],
                 ),
               ),
@@ -237,8 +271,10 @@ class ArcPainter extends CustomPainter {
   //         <-- CustomPainter class
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTRB(30, 30, 770, 770);
-    double startRad = startDeg * math.pi / 180 - math.pi / 2;
+    Offset offsetCenter = Offset(400, 400);
+    final Rect rect = Rect.fromCircle(center: offsetCenter, radius: 370);
+    final double offSetRad = math.pi / 2;
+    double startRad = startDeg * math.pi / 180 - offSetRad;
     double sweepRad;
     if (startDeg < endDeg) {
       if (rotation) {
@@ -254,12 +290,11 @@ class ArcPainter extends CustomPainter {
       }
     }
     final useCenter = false;
-    // a fancy rainbow gradient
     final Gradient gradient = new SweepGradient(
-      endAngle: endDeg / math.pi/180- math.pi / 2
+      endAngle: endDeg * math.pi / 180 - offSetRad,
       colors: [
         Colors.white,
-        currentDotColor,
+        this.color,
       ],
     );
     final paint = Paint()
@@ -267,8 +302,7 @@ class ArcPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..isAntiAlias = true
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 60
-      ..shader = gradient.createShader();
+      ..strokeWidth = 60;
 
     canvas.drawArc(rect, startRad, sweepRad, useCenter, paint);
   }
@@ -278,57 +312,3 @@ class ArcPainter extends CustomPainter {
     return false;
   }
 }
-
-/*
-
-class _RotationButtonState extends State<RotationButton> {
-  bool rotation = true;
-
-  void _handlePress() {
-    setState(() {
-      rotation = !rotation;
-    });
-  }
-
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _handlePress,
-      child: Center(
-        child: RaisedButton.icon(
-          icon: Icon(
-            rotation ? Icons.autorenew : Icons.sync,
-            size: 30.0,
-            color: Theme.of(context).backgroundColor,
-          ),
-          label: Text("Rotation"),
-          color: Theme.of(context).primaryColor,
-          textColor: Theme.of(context).backgroundColor,
-          shape: StadiumBorder(),
-          onPressed: _handlePress,
-        ),
-      ),
-    );
-  }
-}
-
-class RotationButton extends StatefulWidget {
-  @override
-  _RotationButtonState createState() => _RotationButtonState();
-}
-*/
-
-/*
-class RandomWordsState extends State<RandomWords> {
-  @override
-  Widget build(BuildContext context) {
-    final wordPair = WordPair.random();
-    return Text(wordPair.asPascalCase);
-  }
-}
-
-class RandomWords extends StatefulWidget {
-  @override
-  RandomWordsState createState() => new RandomWordsState();
-
-}
- */
