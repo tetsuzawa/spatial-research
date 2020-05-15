@@ -31,11 +31,25 @@ class _AngleSenderState extends State<AngleSender> {
   bool _rotation = true;
   int startDeg = -1;
   int endDeg = -1;
+  ArcPainter arcPainter = ArcPainter();
 
   void _handlePressRotationButton() {
     setState(() {
       _rotation = !_rotation;
+      this.arcPainter.setArcParams(this.startDeg, this.endDeg, this._rotation);
     });
+  }
+
+  void _handlePressClearButton() {
+    setState(() {
+      _rotation = false;
+      this.startDeg = -1;
+      this.endDeg = -1;
+      this.arcPainter.setArcParams(0, 0, this._rotation);
+    });
+  }
+  void _handlePressSubmitButton() {
+    //TODO
   }
 
   void _handlePressCircleElementsButton(int deg) {
@@ -48,8 +62,11 @@ class _AngleSenderState extends State<AngleSender> {
       } else {
         //二回目ならendをセット、pathを計算
         print("end angle $deg");
-        this.startDeg = deg;
+        this.endDeg = deg;
         // TODO
+        this
+            .arcPainter
+            .setArcParams(this.startDeg, this.endDeg, this._rotation);
       }
     });
   }
@@ -107,7 +124,7 @@ class _AngleSenderState extends State<AngleSender> {
                 CustomPaint(
 //                  size: Size(circleElementsFieldWidth / 2,
 //                      circleElementsFieldWidth / 2),
-                  painter: ArcPainter(),
+                  painter: arcPainter,
                 ),
                 ...createCircleElementsButton(36, circleElementsFieldWidth / 2),
               ],
@@ -121,11 +138,48 @@ class _AngleSenderState extends State<AngleSender> {
               ),
               label: Text("Rotation"),
               color: Theme.of(context).primaryColor,
-              textColor: Theme.of(context).primaryTextTheme.bodyText1.color,
+              textColor:
+              Theme.of(context).primaryTextTheme.bodyText1.color,
               shape: StadiumBorder(),
               onPressed: _handlePressRotationButton,
             ),
             /* ----------------- Rotation Button -----------------*/
+            /* ----------------- Buttons -----------------*/
+            Container(
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    RaisedButton.icon(
+                      icon: Icon(
+                        Icons.clear,
+                        size: 30.0,
+                      ),
+                      label: Text("Clear"),
+                      color: Colors.grey[400],
+                      textColor:
+                      Theme.of(context).primaryTextTheme.bodyText1.color,
+                      shape: StadiumBorder(),
+                      onPressed: _handlePressClearButton,
+                    ),
+                    RaisedButton.icon(
+                      icon: Icon(
+                        Icons.send,
+                        size: 30.0,
+                      ),
+                      label: Text("Submit"),
+                      color: Theme.of(context).accentColor,
+                      textColor:
+                      Theme.of(context).primaryTextTheme.bodyText1.color,
+                      shape: StadiumBorder(),
+                      onPressed: _handlePressSubmitButton,
+                    ),
+
+                  ],
+                ),
+              ),
+            ),
+            /* ----------------- Buttons -----------------*/
           ],
         ),
       ),
@@ -139,9 +193,15 @@ class AngleSender extends StatefulWidget {
 }
 
 class ArcPainter extends CustomPainter {
-  double startDeg = 30.0;
-  double endDeg = 260.0;
+  int startDeg = 30;
+  int endDeg = 260;
   bool rotation = false;
+
+  void setArcParams(int startDeg, int endDeg, bool rotation) {
+    this.startDeg = startDeg;
+    this.endDeg = endDeg;
+    this.rotation = rotation;
+  }
 
   //         <-- CustomPainter class
   @override
