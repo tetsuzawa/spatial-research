@@ -73,18 +73,18 @@ class _MyAppState extends State<MyApp> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                FutureBuilder<MessageResponse>(
-                  future: futureMessageResponse,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return Text(snapshot.data.message);
-                    } else if (snapshot.hasError) {
-                      return Text("${snapshot.error}");
-                    }
-                    // By default, show a loading spinner.
-                    return CircularProgressIndicator();
-                  },
-                ),
+//                FutureBuilder<MessageResponse>(
+//                  future: futureMessageResponse,
+//                  builder: (context, snapshot) {
+//                    if (snapshot.hasData) {
+//                      return Text(snapshot.data.message);
+//                    } else if (snapshot.hasError) {
+//                      return Text("${snapshot.error}");
+//                    }
+//                    // By default, show a loading spinner.
+//                    return CircularProgressIndicator();
+//                  },
+//                ),
                 FlatButton(
                   child: Text("do request"),
                   onPressed: () => {_handlePressButton()},

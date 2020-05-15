@@ -1,5 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'http_handler.dart';
@@ -38,8 +42,12 @@ class _AngleSenderState extends State<AngleSender> {
   ArcPainter endPainter = ArcPainter(Colors.blue);
 
   bool isLoading = false;
+
   setLoading(bool state) => setState(() => isLoading = state);
-  Future<MessageResponse> futureMessageResponse;
+  String _responseMessage = "";
+  setResponseMessage(String message) => setState(() => _responseMessage = message);
+
+  _AngleSenderState();
 
   void _handlePressRotationButton() {
     setState(() {
@@ -59,16 +67,17 @@ class _AngleSenderState extends State<AngleSender> {
     });
   }
 
-  void _handlePressSubmitButton()async {
-    setState(() {
+  void _handlePressSubmitButton() async {
+    setResponseMessage("loading...");
+    var message = "";
+    try {
       setLoading(true);
-    });
-    //TODO
-    var  a = await fetchMessageResponse();
-    setState(() {
-        setLoading(false);
-    });
-    futureMessageResponse = fetchMessageResponse();
+      message = await fetchMessageResponse();
+    } finally {
+      setLoading(false);
+      _handlePressClearButton();
+    }
+    setResponseMessage(message);
   }
 
   void _calcInitialRotation() {
@@ -162,18 +171,19 @@ class _AngleSenderState extends State<AngleSender> {
                 Container(
                   width: circleElementsFieldWidth,
                   height: circleElementsFieldWidth,
-                  child: FutureBuilder<MessageResponse>(
-                    future: futureMessageResponse,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return Text(snapshot.data.message);
-                      } else if (snapshot.hasError) {
-                        return Text("${snapshot.error}");
-                      }
-                      // By default, show a loading spinner.
-                      return CircularProgressIndicator();
-                    },
-                  ),
+//                  child: FutureBuilder<MessageResponse>(
+//                    future: futureMessageResponse,
+//                    builder: (context, snapshot) {
+//                      if (snapshot.hasData) {
+//                        return Text(snapshot.data.message);
+//                      } else if (snapshot.hasError) {
+//                        return Text("${snapshot.error}");
+//                      }
+//                      // By default, show a loading spinner.
+//                      return CircularProgressIndicator();
+//                    },
+//                  ),
+                  child: Text(_responseMessage),
                   alignment: Alignment.center,
                 ),
                 CustomPaint(
