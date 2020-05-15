@@ -22,9 +22,7 @@ Future<String> fetchMessageResponse() async {
 
 class MessageResponse {
   final String message;
-
   MessageResponse({this.message});
-
   factory MessageResponse.fromJson(Map<String, dynamic> json) {
     return MessageResponse(
       message: json['message'],

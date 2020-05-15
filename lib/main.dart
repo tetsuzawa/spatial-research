@@ -1,9 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import 'dart:async';
-import 'dart:convert';
 import 'dart:math' as math;
 
 import 'http_handler.dart';
@@ -25,7 +22,7 @@ class MyApp extends StatelessWidget {
         /*5*/
         appBar: AppBar(
           /*6*/
-          title: Text('Welcome to Flutter'),
+          title: Text('Angle Sender'),
         ),
         body: AngleSender(),
       ),
@@ -34,36 +31,42 @@ class MyApp extends StatelessWidget {
 }
 
 class _AngleSenderState extends State<AngleSender> {
+  static final double circleElementsFieldWidth = 800.0;
+  static final double circleElementRadius = 30.0;
+  static final int numCircleElements = 36;
+
+  ArcPainter _startPainter = ArcPainter(
+      Colors.grey[300], circleElementsFieldWidth / 2, circleElementRadius * 2);
+  ArcPainter _arcPainter = ArcPainter(Colors.lightBlueAccent[100],
+      circleElementsFieldWidth / 2, circleElementRadius * 2);
+  ArcPainter _endPainter = ArcPainter(
+      Colors.blue, circleElementsFieldWidth / 2, circleElementRadius * 2);
+
   bool _rotation = false;
-  int startDeg = -1;
-  int endDeg = -1;
-  ArcPainter startPainter = ArcPainter(Colors.grey[300]);
-  ArcPainter arcPainter = ArcPainter(Colors.lightBlueAccent[100]);
-  ArcPainter endPainter = ArcPainter(Colors.blue);
+  int _startDeg = -1;
+  int _endDeg = -1;
 
-  bool isLoading = false;
-
-  setLoading(bool state) => setState(() => isLoading = state);
+  bool _isLoading = false;
+  setLoading(bool state) => setState(() => _isLoading = state);
   String _responseMessage = "";
-  setResponseMessage(String message) => setState(() => _responseMessage = message);
-
-  _AngleSenderState();
+  setResponseMessage(String message) =>
+      setState(() => _responseMessage = message);
 
   void _handlePressRotationButton() {
     setState(() {
       _rotation = !_rotation;
-      arcPainter.setArcParams(startDeg, endDeg, _rotation);
+      _arcPainter.setArcParams(_startDeg, _endDeg, _rotation);
     });
   }
 
   void _handlePressClearButton() {
     setState(() {
       _rotation = false;
-      startDeg = -1;
-      endDeg = -1;
-      arcPainter.setArcParams(0, 0, _rotation);
-      startPainter.setArcParams(0, 0, _rotation);
-      endPainter.setArcParams(0, 0, _rotation);
+      _startDeg = -1;
+      _endDeg = -1;
+      _arcPainter.setArcParams(0, 0, _rotation);
+      _startPainter.setArcParams(0, 0, _rotation);
+      _endPainter.setArcParams(0, 0, _rotation);
     });
   }
 
@@ -82,16 +85,14 @@ class _AngleSenderState extends State<AngleSender> {
 
   void _calcInitialRotation() {
     setState(() {
-      if (startDeg < endDeg) {
-        if ((endDeg - startDeg).abs() <=
-            (360 - endDeg + startDeg).abs()) {
+      if (_startDeg < _endDeg) {
+        if ((_endDeg - _startDeg).abs() <= (360 - _endDeg + _startDeg).abs()) {
           _rotation = true;
         } else {
           _rotation = false;
         }
       } else {
-        if ((endDeg - startDeg).abs() <=
-            (360 - startDeg + endDeg).abs()) {
+        if ((_endDeg - _startDeg).abs() <= (360 - _startDeg + _endDeg).abs()) {
           _rotation = false;
         } else {
           _rotation = true;
@@ -102,25 +103,19 @@ class _AngleSenderState extends State<AngleSender> {
 
   void _handlePressCircleElementsButton(int deg) {
     setState(() {
-      if (startDeg == -1) {
+      if (_startDeg == -1) {
         // 最初にボタンが押されたらstartをセット
         print("start angle $deg");
-        startDeg = deg;
-        this
-            .startPainter
-            .setArcParams(startDeg - 1, startDeg + 1, true);
+        _startDeg = deg;
+        this._startPainter.setArcParams(_startDeg - 1, _startDeg + 1, true);
       } else {
         //二回目ならendをセット、pathを計算
         print("end angle $deg");
-        endDeg = deg;
+        _endDeg = deg;
         _calcInitialRotation();
-        this
-            .arcPainter
-            .setArcParams(startDeg, endDeg, _rotation);
-        this
-            .startPainter
-            .setArcParams(startDeg - 1, startDeg + 1, true);
-        endPainter.setArcParams(endDeg - 1, endDeg + 1, true);
+        this._arcPainter.setArcParams(_startDeg, _endDeg, _rotation);
+        this._startPainter.setArcParams(_startDeg - 1, _startDeg + 1, true);
+        _endPainter.setArcParams(_endDeg - 1, _endDeg + 1, true);
       }
     });
   }
@@ -131,22 +126,23 @@ class _AngleSenderState extends State<AngleSender> {
     // 要素数から角度を計算
     var angle = 360.0 / numElements;
     // ボタンの半径
-    const elemRadius = 30.0;
 
     for (int i = 0; i < numElements; i++) {
       // 角度と座標を計算
       var deg = (angle * i).toInt();
-      var x = math.cos(deg * math.pi / 180 - math.pi) * (radius - elemRadius) +
+      var x = math.cos(deg * math.pi / 180 - math.pi) *
+              (radius - circleElementRadius) +
           radius;
-      var y = -math.sin(deg * math.pi / 180 - math.pi) * (radius - elemRadius) +
+      var y = -math.sin(deg * math.pi / 180 - math.pi) *
+              (radius - circleElementRadius) +
           radius;
-
+      //リストに子要素を追加
       circleElements.add(
         Positioned(
-          top: x - elemRadius,
-          left: y - elemRadius,
-          width: elemRadius * 2,
-          height: elemRadius * 2,
+          top: x - circleElementRadius,
+          left: y - circleElementRadius,
+          width: circleElementRadius * 2,
+          height: circleElementRadius * 2,
           child: FlatButton(
             child: Text(deg.toString()),
             onPressed: () => {_handlePressCircleElementsButton(deg)},
@@ -159,9 +155,8 @@ class _AngleSenderState extends State<AngleSender> {
   }
 
   Widget build(BuildContext context) {
-    const circleElementsFieldWidth = 800.0;
     return Center(
-      child: Center(
+      child: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
@@ -171,34 +166,24 @@ class _AngleSenderState extends State<AngleSender> {
                 Container(
                   width: circleElementsFieldWidth,
                   height: circleElementsFieldWidth,
-//                  child: FutureBuilder<MessageResponse>(
-//                    future: futureMessageResponse,
-//                    builder: (context, snapshot) {
-//                      if (snapshot.hasData) {
-//                        return Text(snapshot.data.message);
-//                      } else if (snapshot.hasError) {
-//                        return Text("${snapshot.error}");
-//                      }
-//                      // By default, show a loading spinner.
-//                      return CircularProgressIndicator();
-//                    },
-//                  ),
                   child: Text(_responseMessage),
                   alignment: Alignment.center,
                 ),
                 CustomPaint(
-                  painter: arcPainter,
+                  painter: _arcPainter,
                 ),
                 CustomPaint(
-                  painter: startPainter,
+                  painter: _startPainter,
                 ),
                 CustomPaint(
-                  painter: endPainter,
+                  painter: _endPainter,
                 ),
-                ..._createCircleElements(36, circleElementsFieldWidth / 2),
+                ..._createCircleElements(
+                    numCircleElements, circleElementsFieldWidth / 2),
               ],
             ),
             /* ----------------- Circle Elements -----------------*/
+            /* ----------------- Buttons -----------------*/
             /* ----------------- Rotation Button -----------------*/
             RaisedButton.icon(
               icon: Icon(
@@ -212,7 +197,6 @@ class _AngleSenderState extends State<AngleSender> {
               onPressed: _handlePressRotationButton,
             ),
             /* ----------------- Rotation Button -----------------*/
-            /* ----------------- Buttons -----------------*/
             Container(
               child: Center(
                 child: Row(
@@ -243,7 +227,7 @@ class _AngleSenderState extends State<AngleSender> {
                       textColor:
                           Theme.of(context).primaryTextTheme.bodyText1.color,
                       shape: StadiumBorder(),
-                      onPressed: isLoading ? null : _handlePressSubmitButton,
+                      onPressed: _isLoading ? null : _handlePressSubmitButton,
                     ),
                     /* ----------------- Submit Button -----------------*/
                   ],
@@ -268,9 +252,11 @@ class ArcPainter extends CustomPainter {
   int endDeg = 0;
   bool rotation = false;
   Color color;
+  double rectRadius;
+  double strokeWidth;
 
   @override
-  ArcPainter(this.color);
+  ArcPainter(this.color, this.rectRadius, this.strokeWidth);
 
   setArcParams(int startDeg, int endDeg, bool rotation) {
     this.startDeg = startDeg;
@@ -278,41 +264,38 @@ class ArcPainter extends CustomPainter {
     this.rotation = rotation;
   }
 
-  //         <-- CustomPainter class
+  static double deg2rad(double deg) {
+    return deg * math.pi / 180;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    Offset offsetCenter = Offset(400, 400);
-    final Rect rect = Rect.fromCircle(center: offsetCenter, radius: 370);
+    Offset offsetCenter = Offset(rectRadius, rectRadius);
+    final Rect rect = Rect.fromCircle(
+        center: offsetCenter, radius: rectRadius - strokeWidth / 2);
     final double offSetRad = math.pi / 2;
     double startRad = startDeg * math.pi / 180 - offSetRad;
     double sweepRad;
     if (startDeg < endDeg) {
       if (rotation) {
-        sweepRad = (endDeg - startDeg) * math.pi / 180;
+        sweepRad = deg2rad((endDeg - startDeg).toDouble());
       } else {
-        sweepRad = -(360 - endDeg + startDeg) * math.pi / 180;
+        sweepRad = deg2rad(-(360.0 - endDeg + startDeg));
       }
     } else {
       if (rotation) {
-        sweepRad = (360 - startDeg + endDeg) * math.pi / 180;
+        sweepRad = deg2rad(360.0 - startDeg + endDeg);
       } else {
-        sweepRad = (endDeg - startDeg) * math.pi / 180;
+        sweepRad = deg2rad((endDeg - startDeg).toDouble());
       }
     }
     final useCenter = false;
-    final Gradient gradient = new SweepGradient(
-      endAngle: endDeg * math.pi / 180 - offSetRad,
-      colors: [
-        Colors.white,
-        color,
-      ],
-    );
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..isAntiAlias = true
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 60;
+      ..strokeWidth = strokeWidth;
 
     canvas.drawArc(rect, startRad, sweepRad, useCenter, paint);
   }
