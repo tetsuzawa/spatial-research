@@ -52,18 +52,18 @@ class _AngleSenderState extends State<AngleSender> {
   void _handlePressRotationButton() {
     setState(() {
       _rotation = !_rotation;
-      this.arcPainter.setArcParams(this.startDeg, this.endDeg, this._rotation);
+      arcPainter.setArcParams(startDeg, endDeg, _rotation);
     });
   }
 
   void _handlePressClearButton() {
     setState(() {
       _rotation = false;
-      this.startDeg = -1;
-      this.endDeg = -1;
-      this.arcPainter.setArcParams(0, 0, this._rotation);
-      this.startPainter.setArcParams(0, 0, this._rotation);
-      this.endPainter.setArcParams(0, 0, this._rotation);
+      startDeg = -1;
+      endDeg = -1;
+      arcPainter.setArcParams(0, 0, _rotation);
+      startPainter.setArcParams(0, 0, _rotation);
+      endPainter.setArcParams(0, 0, _rotation);
     });
   }
 
@@ -83,18 +83,18 @@ class _AngleSenderState extends State<AngleSender> {
   void _calcInitialRotation() {
     setState(() {
       if (startDeg < endDeg) {
-        if ((this.endDeg - this.startDeg).abs() <=
-            (360 - this.endDeg + this.startDeg).abs()) {
-          this._rotation = true;
+        if ((endDeg - startDeg).abs() <=
+            (360 - endDeg + startDeg).abs()) {
+          _rotation = true;
         } else {
-          this._rotation = false;
+          _rotation = false;
         }
       } else {
-        if ((this.endDeg - this.startDeg).abs() <=
-            (360 - this.startDeg + this.endDeg).abs()) {
-          this._rotation = false;
+        if ((endDeg - startDeg).abs() <=
+            (360 - startDeg + endDeg).abs()) {
+          _rotation = false;
         } else {
-          this._rotation = true;
+          _rotation = true;
         }
       }
     });
@@ -102,25 +102,25 @@ class _AngleSenderState extends State<AngleSender> {
 
   void _handlePressCircleElementsButton(int deg) {
     setState(() {
-      if (this.startDeg == -1) {
+      if (startDeg == -1) {
         // 最初にボタンが押されたらstartをセット
         print("start angle $deg");
-        this.startDeg = deg;
+        startDeg = deg;
         this
             .startPainter
-            .setArcParams(this.startDeg - 1, this.startDeg + 1, true);
+            .setArcParams(startDeg - 1, startDeg + 1, true);
       } else {
         //二回目ならendをセット、pathを計算
         print("end angle $deg");
-        this.endDeg = deg;
+        endDeg = deg;
         _calcInitialRotation();
         this
             .arcPainter
-            .setArcParams(this.startDeg, this.endDeg, this._rotation);
+            .setArcParams(startDeg, endDeg, _rotation);
         this
             .startPainter
-            .setArcParams(this.startDeg - 1, this.startDeg + 1, true);
-        this.endPainter.setArcParams(this.endDeg - 1, this.endDeg + 1, true);
+            .setArcParams(startDeg - 1, startDeg + 1, true);
+        endPainter.setArcParams(endDeg - 1, endDeg + 1, true);
       }
     });
   }
@@ -304,11 +304,11 @@ class ArcPainter extends CustomPainter {
       endAngle: endDeg * math.pi / 180 - offSetRad,
       colors: [
         Colors.white,
-        this.color,
+        color,
       ],
     );
     final paint = Paint()
-      ..color = this.color
+      ..color = color
       ..style = PaintingStyle.stroke
       ..isAntiAlias = true
       ..strokeCap = StrokeCap.round
