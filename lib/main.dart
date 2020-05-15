@@ -28,10 +28,12 @@ class MyApp extends StatelessWidget {
 }
 
 class _AngleSenderState extends State<AngleSender> {
-  bool _rotation = true;
+  bool _rotation = false;
   int startDeg = -1;
   int endDeg = -1;
-  ArcPainter arcPainter = ArcPainter();
+  ArcPainter arcPainter = ArcPainter(Colors.lightBlueAccent[100]);
+  ArcPainter startPainter = ArcPainter(Colors.grey[300]);
+  ArcPainter endPainter = ArcPainter(Colors.blue);
 
   void _handlePressRotationButton() {
     setState(() {
@@ -46,10 +48,23 @@ class _AngleSenderState extends State<AngleSender> {
       this.startDeg = -1;
       this.endDeg = -1;
       this.arcPainter.setArcParams(0, 0, this._rotation);
+      this.startPainter.setArcParams(0, 0, this._rotation);
+      this.endPainter.setArcParams(0, 0, this._rotation);
     });
   }
+
   void _handlePressSubmitButton() {
     //TODO
+  }
+
+  void _calcInitialRotation() {
+    print("called");
+    if ((this.endDeg - this.startDeg).abs() <=
+        (360 - this.endDeg + this.startDeg).abs()) {
+      this._rotation = true;
+    } else {
+      this._rotation = false;
+    }
   }
 
   void _handlePressCircleElementsButton(int deg) {
@@ -59,14 +74,22 @@ class _AngleSenderState extends State<AngleSender> {
         // 最初にボタンが押されたらstartをセット
         print("start angle $deg");
         this.startDeg = deg;
+        this
+            .startPainter
+            .setArcParams(this.startDeg - 1, this.startDeg + 1, true);
       } else {
         //二回目ならendをセット、pathを計算
         print("end angle $deg");
         this.endDeg = deg;
         // TODO
+        _calcInitialRotation();
         this
             .arcPainter
             .setArcParams(this.startDeg, this.endDeg, this._rotation);
+        this
+            .startPainter
+            .setArcParams(this.startDeg - 1, this.startDeg + 1, true);
+        this.endPainter.setArcParams(this.endDeg - 1, this.endDeg + 1, true);
       }
     });
   }
@@ -126,6 +149,12 @@ class _AngleSenderState extends State<AngleSender> {
 //                      circleElementsFieldWidth / 2),
                   painter: arcPainter,
                 ),
+                CustomPaint(
+                  painter: startPainter,
+                ),
+                CustomPaint(
+                  painter: endPainter,
+                ),
                 ...createCircleElementsButton(36, circleElementsFieldWidth / 2),
               ],
             ),
@@ -138,8 +167,7 @@ class _AngleSenderState extends State<AngleSender> {
               ),
               label: Text("Rotation"),
               color: Theme.of(context).primaryColor,
-              textColor:
-              Theme.of(context).primaryTextTheme.bodyText1.color,
+              textColor: Theme.of(context).primaryTextTheme.bodyText1.color,
               shape: StadiumBorder(),
               onPressed: _handlePressRotationButton,
             ),
@@ -158,7 +186,7 @@ class _AngleSenderState extends State<AngleSender> {
                       label: Text("Clear"),
                       color: Colors.grey[400],
                       textColor:
-                      Theme.of(context).primaryTextTheme.bodyText1.color,
+                          Theme.of(context).primaryTextTheme.bodyText1.color,
                       shape: StadiumBorder(),
                       onPressed: _handlePressClearButton,
                     ),
@@ -170,11 +198,10 @@ class _AngleSenderState extends State<AngleSender> {
                       label: Text("Submit"),
                       color: Theme.of(context).accentColor,
                       textColor:
-                      Theme.of(context).primaryTextTheme.bodyText1.color,
+                          Theme.of(context).primaryTextTheme.bodyText1.color,
                       shape: StadiumBorder(),
                       onPressed: _handlePressSubmitButton,
                     ),
-
                   ],
                 ),
               ),
@@ -193,11 +220,15 @@ class AngleSender extends StatefulWidget {
 }
 
 class ArcPainter extends CustomPainter {
-  int startDeg = 30;
-  int endDeg = 260;
+  int startDeg = 0;
+  int endDeg = 0;
   bool rotation = false;
+  Color color;
 
-  void setArcParams(int startDeg, int endDeg, bool rotation) {
+  @override
+  ArcPainter(this.color);
+
+  setArcParams(int startDeg, int endDeg, bool rotation) {
     this.startDeg = startDeg;
     this.endDeg = endDeg;
     this.rotation = rotation;
@@ -223,12 +254,21 @@ class ArcPainter extends CustomPainter {
       }
     }
     final useCenter = false;
+    // a fancy rainbow gradient
+    final Gradient gradient = new SweepGradient(
+      endAngle: endDeg / math.pi/180- math.pi / 2
+      colors: [
+        Colors.white,
+        currentDotColor,
+      ],
+    );
     final paint = Paint()
-      ..color = Colors.lightBlueAccent[100]
+      ..color = this.color
       ..style = PaintingStyle.stroke
       ..isAntiAlias = true
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 60;
+      ..strokeWidth = 60
+      ..shader = gradient.createShader();
 
     canvas.drawArc(rect, startRad, sweepRad, useCenter, paint);
   }
