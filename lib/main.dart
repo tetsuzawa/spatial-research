@@ -16,8 +16,8 @@ class MyApp extends StatelessWidget {
       /*4*/
       title: 'Welcome to Flutter',
       theme: new ThemeData.light().copyWith(
-          //TODO 色のカスタマイズ
-          ),
+        //TODO 色のカスタマイズ
+      ),
       home: Scaffold(
         /*5*/
         appBar: AppBar(
@@ -47,8 +47,10 @@ class _AngleSenderState extends State<AngleSender> {
   int _endDeg = -1;
 
   bool _isLoading = false;
+
   setLoading(bool state) => setState(() => _isLoading = state);
   String _responseMessage = "";
+
   setResponseMessage(String message) =>
       setState(() => _responseMessage = message);
 
@@ -72,10 +74,11 @@ class _AngleSenderState extends State<AngleSender> {
 
   void _handlePressSubmitButton() async {
     setResponseMessage("loading...");
+    var rotation = _rotation ? "c" : "cc";
     var message = "";
     try {
       setLoading(true);
-      message = await fetchMessageResponse();
+      message = await postAngle(_startDeg, _endDeg, rotation);
     } finally {
       setLoading(false);
       _handlePressClearButton();
@@ -131,10 +134,10 @@ class _AngleSenderState extends State<AngleSender> {
       // 角度と座標を計算
       var deg = (angle * i).toInt();
       var x = math.cos(deg * math.pi / 180 - math.pi) *
-              (radius - circleElementRadius) +
+          (radius - circleElementRadius) +
           radius;
       var y = -math.sin(deg * math.pi / 180 - math.pi) *
-              (radius - circleElementRadius) +
+          (radius - circleElementRadius) +
           radius;
       //リストに子要素を追加
       circleElements.add(
@@ -191,8 +194,14 @@ class _AngleSenderState extends State<AngleSender> {
                 size: 30.0,
               ),
               label: Text("Rotation"),
-              color: Theme.of(context).primaryColor,
-              textColor: Theme.of(context).primaryTextTheme.bodyText1.color,
+              color: Theme
+                  .of(context)
+                  .primaryColor,
+              textColor: Theme
+                  .of(context)
+                  .primaryTextTheme
+                  .bodyText1
+                  .color,
               shape: StadiumBorder(),
               onPressed: _handlePressRotationButton,
             ),
@@ -211,7 +220,11 @@ class _AngleSenderState extends State<AngleSender> {
                       label: Text("Clear"),
                       color: Colors.grey[400],
                       textColor:
-                          Theme.of(context).primaryTextTheme.bodyText1.color,
+                      Theme
+                          .of(context)
+                          .primaryTextTheme
+                          .bodyText1
+                          .color,
                       shape: StadiumBorder(),
                       onPressed: _handlePressClearButton,
                     ),
@@ -223,9 +236,15 @@ class _AngleSenderState extends State<AngleSender> {
                         size: 30.0,
                       ),
                       label: Text("Submit"),
-                      color: Theme.of(context).accentColor,
+                      color: Theme
+                          .of(context)
+                          .accentColor,
                       textColor:
-                          Theme.of(context).primaryTextTheme.bodyText1.color,
+                      Theme
+                          .of(context)
+                          .primaryTextTheme
+                          .bodyText1
+                          .color,
                       shape: StadiumBorder(),
                       onPressed: _isLoading ? null : _handlePressSubmitButton,
                     ),

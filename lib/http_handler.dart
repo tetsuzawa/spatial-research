@@ -3,29 +3,71 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-///*
-Future<String> fetchMessageResponse() async {
-  final response = await http.get('http://localhost:8888/words');
+const API_BASE_URL = 'http://localhost:8888';
 
-  if (response.statusCode == 200) {
-    // If the server did return a 200 OK response,
-    // then parse the JSON.
-    var messageResponse = MessageResponse.fromJson(json.decode(response.body));
-    return messageResponse.message;
-  } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
-    throw Exception('Failed to load album');
-  }
-}
-//*/
-
-class MessageResponse {
+/* ----------------------- Response -----------------------*/
+class Response {
   final String message;
-  MessageResponse({this.message});
-  factory MessageResponse.fromJson(Map<String, dynamic> json) {
-    return MessageResponse(
+
+  Response({this.message});
+
+  factory Response.fromJson(Map<String, dynamic> json) {
+    return Response(
       message: json['message'],
     );
   }
 }
+/* ----------------------- Response -----------------------*/
+
+/* ----------------------- Request -----------------------*/
+class Request {
+  final int startDegree;
+  final int endDegree;
+  final String rotation;
+
+  Request(this.startDegree, this.endDegree, this.rotation);
+
+  Map<String, dynamic> toJson() => {
+        'start_degree': startDegree,
+        'end_degree': endDegree,
+        'rotation': rotation,
+      };
+}
+/* ----------------------- Request -----------------------*/
+
+/* ----------------------- ping用 (HTTP GET) -----------------------*/
+Future<String> getPingMessage() async {
+  final endPoint = API_BASE_URL + '/ping';
+  final response = await http.get(endPoint);
+
+  if (response.statusCode == 200) {
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
+    var messageResponse = Response.fromJson(json.decode(response.body));
+    return messageResponse.message;
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('Failed to load ping');
+  }
+}
+/* ----------------------- ping用 (HTTP GET) -----------------------*/
+
+/* ----------------------- 角度送信用 (HTTP POST) -----------------------*/
+Future<String> postAngle(int startDeg, int endDeg, String rotation) async {
+  final endPoint = API_BASE_URL + '/';
+  var request = new Request(startDeg, endDeg, rotation);
+  final response = await http.post(endPoint,
+      body: json.encode(request.toJson()),
+      headers: {"Content-Type": "application/json"});
+
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    var messageResponse = Response.fromJson(json.decode(response.body));
+    return messageResponse.message;
+  } else {
+    // If that response was not OK, throw an error.
+    throw Exception('Failed to load post');
+  }
+}
+/* ----------------------- 角度送信用 (HTTP POST) -----------------------*/
