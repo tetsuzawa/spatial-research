@@ -34,29 +34,29 @@ LSTF_DIR=$2
 mkdir -p ${SUBJECT_DIR}/HRTF ${SUBJECT_DIR}/SLTF
 
 #--------------------------------- HRTFを生成 ---------------------------------#
-echo "###################################################################"
+echo "####################################################################"
 echo "                       Calculating HRTF ......    "
 echo "####################################################################"
+
+ARGS=""
 for LR in L R; do
   for Angle in `seq 0 5 355`; do
     speaker_num=$((Angle/5%18+1))
-    timeconvo ${SUBJECT_DIR}/SSTF/cSSTF_${Angle}_${LR}.DDB ${LSTF_DIR}/cinv_cLSTF_${speaker_num}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB &
+    ARGS="${ARGS} ${SUBJECT_DIR}/SSTF/cSSTF_${Angle}_${LR}.DDB ${LSTF_DIR}/cinv_cLSTF_${speaker_num}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB"
   done
 done
-wait
-#-----------------------------------------------------------------------------#
-echo "###################################################################"
+echo "${ARGS}" | xargs -t -P4 -n3 timeconvo
+
 
 #--------------------------------- SLTFを生成 ---------------------------------#
-echo "###################################################################"
-echo "###################################################################"
+echo "####################################################################"
 echo "                       Calculating SLFT ......    "
 echo "####################################################################"
 for LR in L R; do
   for Angle in `seq 0 5 355`; do
     speaker_num=$((Angle/5%18+1))
-    timeconvo ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$((Angle*10))_${LR}.DDB &
+    ARGS="${ARGS} ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$((Angle*10))_${LR}.DDB"
   done
 done
-wait
+echo "${ARGS}" | xargs -t -P4 -n3 timeconvo
 #-----------------------------------------------------------------------------#

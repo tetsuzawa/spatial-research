@@ -49,7 +49,7 @@ for move_width in ${move_width_list}; do
     done
   done
 done
-echo "${ARGS}" | xargs -t -P 4 -n 6 python3 continuous_move_judge_dv.py
+echo "${ARGS}" | xargs -t -P4 -n6 python3 continuous_move_judge_dv.py
 echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0
@@ -99,7 +99,7 @@ for move_width in ${move_width_list}; do
     done
   done
 done
-echo "${ARGS}" | xargs -t -P 4 -n 5 cosine_windowing
+echo "${ARGS}" | xargs -t -P4 -n5 cosine_windowing
 
 ARGS=""
 for move_width in ${move_width_list}; do
@@ -114,7 +114,7 @@ for move_width in ${move_width_list}; do
      done
   done
 done
-echo "${ARGS}" | xargs -t -P 4 -n 2 dv
+echo "${ARGS}" | xargs -t -P4 -n2 dv
 
 ARGS=""
 for move_width in ${move_width_list}; do
@@ -127,7 +127,7 @@ for move_width in ${move_width_list}; do
     done
   done
 done
-echo "${ARGS}" | xargs -t -P 4 -n 3 mono2LR
+echo "${ARGS}" | xargs -t -P4 -n3 mono2LR
 
 ARGS=""
 for move_width in ${move_width_list}; do
@@ -140,7 +140,7 @@ for move_width in ${move_width_list}; do
     done
   done
 done
-echo "${ARGS}" | xargs -t -P 4 -n 4 rm
+echo "${ARGS}" | xargs -t -P4 -n4 rm
 echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0
