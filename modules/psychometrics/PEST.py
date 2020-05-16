@@ -171,77 +171,76 @@ class PEST:
         pf_inv = M - S * np.log(a / (P - b) - 1)
         return pf_inv
 
+    # -------------------------- Example -------------------------- #
+    @staticmethod
+    def example():
+        """刺激レベルの閾値を推定する例
 
-# -------------------------- Example -------------------------- #
+        心理測定関数PFの閾値Ptに対する刺激レベルの閾値Xtを推定する.
+        """
 
+        # 刺激レベルの対象範囲
+        mock_x = list(range(1, 50))
 
-def example():
-    """刺激レベルの閾値を推定する例
+        # 初期刺激レベル
+        X = 50
+        # 刺激レベルの変化を記録するためのリスト
+        X_list = [X]
 
-    心理測定関数PFの閾値Ptに対する刺激レベルの閾値Xtを推定する.
-    """
+        # 心理測定関数のパラメータの真値（強制選択法, 2IFC）
+        true_M = 20
+        true_S = 1.5
+        true_a = 1 / 2  # 傾き1/2
+        true_b = 1 / 2  # バイアス1/2
+        true_Pt = 0.75
 
-    # 刺激レベルの対象範囲
-    mock_x = list(range(1, 50))
+        # PEST法のインスタンス生成
+        pest = PEST(init_dx=16, min_dx=1, Pt=true_Pt, W=1.0)
 
-    # 初期刺激レベル
-    X = 50
-    # 刺激レベルの変化を記録するためのリスト
-    X_list = [X]
+        # 試行回数T
+        T = 0
+        # 実験開始
+        print("実験開始")
+        while True:
+            T += 1
+            # 被験者の回答の正誤
+            is_correct = np.random.rand() < PEST.PF(X, true_M, true_S, true_a, true_b)
 
-    # 心理測定関数のパラメータの真値（強制選択法, 2IFC）
-    true_M = 20
-    true_S = 1.5
-    true_a = 1 / 2  # 傾き1/2
-    true_b = 1 / 2  # バイアス1/2
-    true_Pt = 0.75
+            # 刺激レベルの更新
+            X = pest.update(is_correct, X)
+            X_list.append(X)
 
-    # PEST法のインスタンス生成
-    pest = PEST(init_dx=16, min_dx=1, Pt=true_Pt, W=1.0)
+            # 実験終了判定
+            if pest.has_ended():
+                print("実験終了")
+                break
 
-    # 試行回数T
-    T = 0
-    # 実験開始
-    print("実験開始")
-    while True:
-        T += 1
-        # 被験者の回答の正誤
-        is_correct = np.random.rand() < PEST.PF(X, true_M, true_S, true_a, true_b)
+        # 推定結果の出力
+        true_Xt = PEST.PF_inv(true_Pt, true_M, true_S, true_a, true_b)
+        print(f"{T}回目の回答で実験が終了しました.")
+        print(f"刺激レベルの閾値. 真値: {true_Xt}, 推定値: {X}")
 
-        # 刺激レベルの更新
-        X = pest.update(is_correct, X)
-        X_list.append(X)
+        # 心理測定関数の閾値をプロット
+        y = [PEST.PF(x_tmp, true_M, true_S, true_a, true_b) for x_tmp in mock_x]
+        plt.plot(mock_x, y, color="red", label=f"True PF")
+        plt.hlines(y=true_Pt, xmin=0, xmax=true_Xt, linestyles="--")
+        plt.vlines(x=true_Xt, ymin=1 / 2, ymax=true_Pt, linestyles="--", label="True threshold")
+        plt.plot([X], [true_Pt], "o", color="orange", label="Estimated threshold")
+        plt.xlabel("Stimulation level X")
+        plt.ylabel("PF(X)")
+        plt.title("Psychometric Function PF")
+        plt.legend()
+        plt.show()
 
-        # 実験終了判定
-        if pest.has_ended():
-            print("実験終了")
-            break
-
-    # 推定結果の出力
-    true_Xt = PEST.PF_inv(true_Pt, true_M, true_S, true_a, true_b)
-    print(f"{T}回目の回答で実験が終了しました.")
-    print(f"刺激レベルの閾値. 真値: {true_Xt}, 推定値: {X}")
-
-    # 心理測定関数の閾値をプロット
-    y = [PEST.PF(x_tmp, true_M, true_S, true_a, true_b) for x_tmp in mock_x]
-    plt.plot(mock_x, y, color="red", label=f"True PF")
-    plt.hlines(y=true_Pt, xmin=0, xmax=true_Xt, linestyles="--")
-    plt.vlines(x=true_Xt, ymin=1 / 2, ymax=true_Pt, linestyles="--", label="True threshold")
-    plt.plot([X], [true_Pt], "o", color="orange", label="Estimated threshold")
-    plt.xlabel("Stimulation level X")
-    plt.ylabel("PF(X)")
-    plt.title("Psychometric Function PF")
-    plt.legend()
-    plt.show()
-
-    # 刺激レベルの軌跡
-    plt.plot(list(range(1, T + 2)), X_list, "o-")
-    plt.hlines(y=true_Xt, xmin=0, xmax=T + 2, linestyles="--")
-    plt.xlabel("Numbers of trials T")
-    plt.ylabel("Stimulation level X")
-    plt.title("Path of stimulation level")
-    plt.show()
+        # 刺激レベルの軌跡
+        plt.plot(list(range(1, T + 2)), X_list, "o-")
+        plt.hlines(y=true_Xt, xmin=0, xmax=T + 2, linestyles="--")
+        plt.xlabel("Numbers of trials T")
+        plt.ylabel("Stimulation level X")
+        plt.title("Path of stimulation level")
+        plt.show()
+    # -------------------------- Example -------------------------- #
 
 
 if __name__ == '__main__':
-    example()
+    PEST.example()

@@ -180,83 +180,85 @@ class BestPEST:
         pf = BestPEST.PF(X, M, S, a, b)
         return (C - T * pf) / (pf * (1 - pf)) * BestPEST._PF_S(X, M, S, a, b)
 
+    # -------------------------- Example -------------------------- #
+    @staticmethod
+    def example():
+        # 刺激レベルの対象範囲
+        mock_x = list(range(1, 51))
 
-def example():
-    # 刺激レベルの対象範囲
-    mock_x = list(range(1, 51))
+        # 最大・最小刺激レベル
+        max_X = 50
+        min_X = 1
+        # 刺激レベルの変化を記録するためのリスト
+        X_list = []
 
-    # 最大・最小刺激レベル
-    max_X = 50
-    min_X = 1
-    # 刺激レベルの変化を記録するためのリスト
-    X_list = []
+        # 心理測定関数のパラメータの真値（強制選択法, 2IFC）
+        true_M = 20.0
+        true_S = 1.5
+        true_a = 1 / 2  # 傾き1/2
+        true_b = 1 / 2  # バイアス1/2
+        true_Pt = 0.75
+        # 試行終了回数
+        T_end = 50
 
-    # 心理測定関数のパラメータの真値（強制選択法, 2IFC）
-    true_M = 20.0
-    true_S = 1.5
-    true_a = 1 / 2  # 傾き1/2
-    true_b = 1 / 2  # バイアス1/2
-    true_Pt = 0.75
-    # 試行終了回数
-    T_end = 50
+        # BestPEST法のインスタンス生成
+        best_pest = BestPEST(T_end=T_end)
 
-    # BestPEST法のインスタンス生成
-    best_pest = BestPEST(T_end=T_end)
+        # 試行回数T
+        T = 0
+        # 実験開始
+        print("実験開始")
+        while True:
+            T += 1
+            if T == 1:
+                X = max_X
+            elif T == 2:
+                X = min_X
 
-    # 試行回数T
-    T = 0
-    # 実験開始
-    print("実験開始")
-    while True:
-        T += 1
-        if T == 1:
-            X = max_X
-        elif T == 2:
-            X = min_X
+            if X < min_X:
+                X = min_X
+            elif X > max_X:
+                X = max_X
 
-        if X < min_X:
-            X = min_X
-        elif X > max_X:
-            X = max_X
+            X_list.append(X)
+            print(f"\rT:{T}, X:{X}")
 
-        X_list.append(X)
-        print(f"\rT:{T}, X:{X}")
+            # 被験者の回答の正誤
+            is_correct = np.random.rand() < BestPEST.PF(X, true_M, true_S, true_a, true_b)
 
-        # 被験者の回答の正誤
-        is_correct = np.random.rand() < BestPEST.PF(X, true_M, true_S, true_a, true_b)
+            # 刺激レベルの更新
+            X = int(best_pest.update(is_correct, X))
 
-        # 刺激レベルの更新
-        X = int(best_pest.update(is_correct, X))
+            # 実験終了判定
+            if best_pest.has_ended():
+                print("実験終了")
+                break
 
-        # 実験終了判定
-        if best_pest.has_ended():
-            print("実験終了")
-            break
+        # 推定結果の出力
+        true_Xt = BestPEST.PF_inv(true_Pt, true_M, true_S, true_a, true_b)
+        print(f"刺激レベルの閾値. 真値: {true_Xt}, 推定値: {X}")
 
-    # 推定結果の出力
-    true_Xt = BestPEST.PF_inv(true_Pt, true_M, true_S, true_a, true_b)
-    print(f"刺激レベルの閾値. 真値: {true_Xt}, 推定値: {X}")
+        # 心理測定関数の閾値をプロット
+        y = [BestPEST.PF(x_tmp, true_M, true_S, true_a, true_b) for x_tmp in mock_x]
+        plt.plot(mock_x, y, color="red", label=f"True PF")
+        plt.hlines(y=true_Pt, xmin=0, xmax=true_Xt, linestyles="--")
+        plt.vlines(x=true_Xt, ymin=1 / 2, ymax=true_Pt, linestyles="--", label="True threshold")
+        plt.plot([X], [true_Pt], "o", color="orange", label="Estimated threshold")
+        plt.xlabel("Stimulation level X")
+        plt.ylabel("PF(X)")
+        plt.title("Psychometric Function PF")
+        plt.legend()
+        plt.show()
 
-    # 心理測定関数の閾値をプロット
-    y = [BestPEST.PF(x_tmp, true_M, true_S, true_a, true_b) for x_tmp in mock_x]
-    plt.plot(mock_x, y, color="red", label=f"True PF")
-    plt.hlines(y=true_Pt, xmin=0, xmax=true_Xt, linestyles="--")
-    plt.vlines(x=true_Xt, ymin=1 / 2, ymax=true_Pt, linestyles="--", label="True threshold")
-    plt.plot([X], [true_Pt], "o", color="orange", label="Estimated threshold")
-    plt.xlabel("Stimulation level X")
-    plt.ylabel("PF(X)")
-    plt.title("Psychometric Function PF")
-    plt.legend()
-    plt.show()
-
-    # 刺激レベルの軌跡
-    plt.plot(list(range(1, T + 1)), X_list, "o-")
-    plt.hlines(y=true_Xt, xmin=0, xmax=T + 1, linestyles="--")
-    plt.xlabel("Numbers of trials T")
-    plt.ylabel("Stimulation level X")
-    plt.title("Path of stimulation level")
-    plt.show()
+        # 刺激レベルの軌跡
+        plt.plot(list(range(1, T + 1)), X_list, "o-")
+        plt.hlines(y=true_Xt, xmin=0, xmax=T + 1, linestyles="--")
+        plt.xlabel("Numbers of trials T")
+        plt.ylabel("Stimulation level X")
+        plt.title("Path of stimulation level")
+        plt.show()
+    # -------------------------- Example -------------------------- #
 
 
 if __name__ == '__main__':
-    example()
+    BestPEST.example()
