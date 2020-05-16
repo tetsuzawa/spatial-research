@@ -1,3 +1,3 @@
-from BestPest import *
-from Hybrid import *
-from PEST import *
+from psychometrics.BestPest import *
+from psychometrics.Hybrid import *
+from psychometrics.PEST import *
