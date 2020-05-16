@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'dart:math' as math;
 
@@ -46,7 +47,7 @@ class _AngleSenderState extends State<AngleSender> {
   int _startDeg = -1;
   int _endDeg = -1;
 
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   setLoading(bool state) => setState(() => _isLoading = state);
   String _responseMessage = "";
@@ -55,6 +56,7 @@ class _AngleSenderState extends State<AngleSender> {
       setState(() => _responseMessage = message);
 
   void _handlePressRotationButton() {
+    SystemSound.play(SystemSoundType.click);
     setState(() {
       _rotation = !_rotation;
       _arcPainter.setArcParams(_startDeg, _endDeg, _rotation);
@@ -62,6 +64,7 @@ class _AngleSenderState extends State<AngleSender> {
   }
 
   void _handlePressClearButton() {
+    SystemSound.play(SystemSoundType.click);
     setState(() {
       _rotation = false;
       _startDeg = -1;
@@ -70,9 +73,11 @@ class _AngleSenderState extends State<AngleSender> {
       _startPainter.setArcParams(0, 0, _rotation);
       _endPainter.setArcParams(0, 0, _rotation);
     });
+    setLoading(true);
   }
 
   void _handlePressSubmitButton() async {
+    SystemSound.play(SystemSoundType.click);
     setResponseMessage("loading...");
     var rotation = _rotation ? "c" : "cc";
     var message = "";
@@ -105,6 +110,7 @@ class _AngleSenderState extends State<AngleSender> {
   }
 
   void _handlePressCircleElementsButton(int deg) {
+    SystemSound.play(SystemSoundType.click);
     setState(() {
       if (_startDeg == -1) {
         // 最初にボタンが押されたらstartをセット
@@ -114,6 +120,7 @@ class _AngleSenderState extends State<AngleSender> {
       } else {
         //二回目ならendをセット、pathを計算
         print("end angle $deg");
+        setLoading(false);
         _endDeg = deg;
         _calcInitialRotation();
         this._arcPainter.setArcParams(_startDeg, _endDeg, _rotation);
