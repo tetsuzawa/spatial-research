@@ -108,8 +108,8 @@ def main():
             # out = [(out[n]/data_max*28000) for n in range(len(out))]
             out = np.array(out).astype(np.float64)  # float64バイナリに変換
             # DDBファイルに書き出し
-            out_file = outdir + "/move_judge_w" + str(movement_width) + "_mt" + str(
-                move_velocity) + "_" + direction + "_" + str(end_angle) + "_" + LR + ".DDB"
+            out_file = outdir + "/move_judge_w" + str(movement_width).zfill(2) + "_mt" + str(
+                move_velocity).zfill(2) + "_" + direction + "_" + str(end_angle) + "_" + LR + ".DDB"
             with open(out_file, 'wb') as data:
                 data.write(out)
                 print(out_file + ': length=' + str(len(out)))

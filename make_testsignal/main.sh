@@ -35,4 +35,5 @@ bash make_testsignal_move_judge45_msdv.sh ${SUBJECT_DIR} # 移動音の生成
 echo "Running make_testsignal_move_judge90_msdv.sh ..."
 bash make_testsignal_move_judge90_msdv.sh ${SUBJECT_DIR} # 移動音の生成
 
+echo "${SECOND} elapsed"
 echo "completed!!"
