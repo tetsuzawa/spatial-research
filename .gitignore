@@ -642,6 +642,9 @@ TSWLatexianTemp*
 *.mov
 *.MOV
 
+# research-tools
+tools/
+
 # Useless
 *.idea/
 .idea/
