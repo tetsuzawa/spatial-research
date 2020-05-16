@@ -273,7 +273,6 @@ class Hybrid:
         pf = Hybrid.PF(X, M, S, a, b)
         return (C - T * pf) / (pf * (1 - pf)) * Hybrid._PF_S(X, M, S, a, b)
 
-
     # -------------------------- Example -------------------------- #
     @staticmethod
     def example():
@@ -323,7 +322,6 @@ class Hybrid:
 
         hybrid.validate_parameter()
         X = hybrid.M
-
 
         # 推定結果の出力
         true_Xt = Hybrid.PF_inv(true_Pt, true_M, true_S, true_a, true_b)
