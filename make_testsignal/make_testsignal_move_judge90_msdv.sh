@@ -30,8 +30,9 @@ mkdir -p ${SUBJECT_DIR}/TS ${SUBJECT_DIR}/ANSWER input_files
 
 
 WHITE_NOISE=w35s.DSB
-move_width_list=`seq 1 60`
-move_velocity_list=`seq 1 50`
+# seq の -w オプションは桁合わせのゼロ埋めを有効化
+move_width_list=`seq -w 1 60`
+move_velocity_list=`seq -w 1 50`
 end_angle_list=(90)
 
 #---------------------------------連続音の作成---------------------------------#
