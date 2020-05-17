@@ -17,20 +17,21 @@ if [ $# -ne 1 ]; then
   exit
 fi
 
-
 SUBJECT_DIR=$1
 
+NUM_CPU_CORE=4
+
+clear
 echo "###################################################################"
 echo "                      Linear interpolating ...                     "
 echo "###################################################################"
 
-ARGS=""
+(
 for LR in L R; do
-  ARGS=""
   for Angle in `seq 0 50 3550`; do
     for i in `seq 1 9`; do
-      ARGS="${ARGS} ${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB 0.$((10-i)) ${SUBJECT_DIR}/SLTF/SLTF_$((Angle+i*10/2))_${LR}.DDB"
+      echo "${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB 0.$((10-i)) ${SUBJECT_DIR}/SLTF/SLTF_$((Angle+i*10/2))_${LR}.DDB"
     done
   done
-  echo "${ARGS}" | xargs -t -P4 -n4 -I{} linear_inpo_hrir_using_ATD {} > /dev/null
 done
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} linear_inpo_hrir_using_ATD

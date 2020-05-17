@@ -27,36 +27,41 @@ if [ $# -ne 2 ]; then
   exit
 fi
 
-
 SUBJECT_DIR=$1
 LSTF_DIR=$2
+
+NUM_CPU_CORE=4
 
 mkdir -p ${SUBJECT_DIR}/HRTF ${SUBJECT_DIR}/SLTF
 
 #--------------------------------- HRTFを生成 ---------------------------------#
+clear
 echo "####################################################################"
 echo "                       Calculating HRTF ......    "
 echo "####################################################################"
 
-ARGS=""
+(
 for LR in L R; do
   for Angle in `seq 0 5 355`; do
     speaker_num=$((Angle/5%18+1))
-    ARGS="${ARGS} ${SUBJECT_DIR}/SSTF/cSSTF_${Angle}_${LR}.DDB ${LSTF_DIR}/cinv_cLSTF_${speaker_num}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB"
+    echo "${SUBJECT_DIR}/SSTF/cSSTF_${Angle}_${LR}.DDB ${LSTF_DIR}/cinv_cLSTF_${speaker_num}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB"
   done
 done
-echo "${ARGS}" | xargs -t -P4 -n3 timeconvo
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} timeconvo
 
 
 #--------------------------------- SLTFを生成 ---------------------------------#
+clear
 echo "####################################################################"
 echo "                       Calculating SLFT ......    "
 echo "####################################################################"
+
+(
 for LR in L R; do
   for Angle in `seq 0 5 355`; do
     speaker_num=$((Angle/5%18+1))
-    ARGS="${ARGS} ${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$((Angle*10))_${LR}.DDB"
+    echo "${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$((Angle*10))_${LR}.DDB"
   done
 done
-echo "${ARGS}" | xargs -t -P4 -n3 timeconvo
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} timeconvo
 #-----------------------------------------------------------------------------#

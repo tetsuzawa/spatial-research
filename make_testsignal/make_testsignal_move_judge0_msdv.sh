@@ -34,27 +34,31 @@ move_width_list=`seq -w 1 10`
 move_velocity_list=`seq -w 1 50`
 end_angle_list=(0)
 
+NUM_CPU_CORE=4
+
 #---------------------------------連続音の作成---------------------------------#
+clear
 echo "###################################################################"
 echo "      Creating continuous movement sounds ...                      "
 echo "###################################################################"
 echo
 
-ARGS=""
+(
 for move_width in ${move_width_list}; do
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
-      ARGS="${ARGS} ${SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${SUBJECT_DIR}/TS"
+      echo "${SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${SUBJECT_DIR}/TS"
     done
   done
 done
-echo "${ARGS}" | xargs -t -P4 -n6 python3 continuous_move_judge_dv.py
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 continuous_move_judge_dv.py
 echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0
 #---------------------------------------------------------------------------------------#
 
 #---------------------------------最大音圧の調整---------------------------------#
+clear
 echo "###################################################################"
 echo "      Adjusting max sound pressure ...                             "
 echo "###################################################################"
@@ -85,21 +89,20 @@ echo "      Multiplying cosine window ...                                "
 echo "###################################################################"
 echo
 
-ARGS=""
+(
 for move_width in ${move_width_list}; do
-  ARGS=""
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
       for rotation_direction in c cc; do
         arg=${SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}
         for LR in L R; do
-          ARGS="${ARGS} ${arg}_${LR}.DDB 48 0 30 ${arg}_${LR}.DDB"
+          echo "${arg}_${LR}.DDB 48 0 30 ${arg}_${LR}.DDB"
         done
       done
     done
   done
-  echo "${ARGS}" | xargs -t -P4 -n5 cosine_windowing
 done
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} cosine_windowing
 echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0
@@ -112,21 +115,20 @@ echo "      Executing dv ...                                             "
 echo "###################################################################"
 echo
 
-ARGS=""
+(
 for move_width in ${move_width_list}; do
-  ARGS=""
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
       for rotation_direction in c cc; do
         arg=${SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}
         for LR in L R; do
-          ARGS="${ARGS} ${arg}_${LR}.DDB ${arg}_${LR}.DSB"
+          echo "${arg}_${LR}.DDB ${arg}_${LR}.DSB"
         done
        done
      done
   done
-  echo "${ARGS}" | xargs -t -P4 -n2 dv
 done
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} dv
 echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0
@@ -139,19 +141,18 @@ echo "      Converting sounds to stereo ...                             "
 echo "###################################################################"
 echo
 
-ARGS=""
+(
 for move_width in ${move_width_list}; do
-  ARGS=""
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
       for rotation_direction in c cc; do
         arg=${SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}
-        ARGS="${ARGS} ${arg}_L.DSB ${arg}_R.DSB ${arg}.DSB"
+        echo "${arg}_L.DSB ${arg}_R.DSB ${arg}.DSB"
       done
     done
   done
-  echo "${ARGS}" | xargs -t -P4 -n3 mono2LR
 done
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} mono2LR
 echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0
@@ -163,19 +164,18 @@ echo "###################################################################"
 echo "      Removing useless files ...                             "
 echo "###################################################################"
 
-ARGS=""
+(
 for move_width in ${move_width_list}; do
-  ARGS=""
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
       for rotation_direction in c cc; do
         arg=${SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}
-        ARGS="${ARGS} ${arg}_L.DDB ${arg}_R.DDB ${arg}_L.DSB ${arg}_R.DSB"
+        echo "${arg}_L.DDB ${arg}_R.DDB ${arg}_L.DSB ${arg}_R.DSB"
       done
     done
   done
-  echo "${ARGS}" | xargs -t -P4 -n4 rm
 done
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} rm
 echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0

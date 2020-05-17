@@ -15,7 +15,7 @@ set -Ceu
 
 if [ $# -ne 2 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: SUBJECT mode(0/1)\e[m \n\n"
+  printf " usage: bash main.sh SUBJECT_DIR LSTF_DIR \e[m \n\n"
   exit
 fi
 
@@ -35,5 +35,7 @@ bash make_testsignal_move_judge45_msdv.sh ${SUBJECT_DIR} # 移動音の生成
 echo "Running make_testsignal_move_judge90_msdv.sh ..."
 bash make_testsignal_move_judge90_msdv.sh ${SUBJECT_DIR} # 移動音の生成
 
-echo "${SECOND} elapsed"
+echo ""
+echo "$((SECONDS/60))min $((SECONDS%60))sec elapsed"
+echo ""
 echo "completed!!"
