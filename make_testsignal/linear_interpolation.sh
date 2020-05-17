@@ -26,11 +26,11 @@ echo "###################################################################"
 
 ARGS=""
 for LR in L R; do
+  ARGS=""
   for Angle in `seq 0 50 3550`; do
     for i in `seq 1 9`; do
-      #echo "0.$((10-i))"
       ARGS="${ARGS} ${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB 0.$((10-i)) ${SUBJECT_DIR}/SLTF/SLTF_$((Angle+i*10/2))_${LR}.DDB"
     done
   done
+  echo "${ARGS}" | xargs -t -P4 -n4 -I{} linear_inpo_hrir_using_ATD {} > /dev/null
 done
-echo "${ARGS}" | xargs -t -P4 -n4 -I{} linear_inpo_hrir_using_ATD {} > /dev/null

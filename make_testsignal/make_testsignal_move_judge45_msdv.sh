@@ -78,15 +78,16 @@ echo "${SECONDS}sec elapsed ..."
 SECONDS=0
 #---------------------------------------------------------------------------------------#
 
-# ---------------------------------------ステレオ化----------------------------------------------#
+# -----------------------------------------コサイン窓----------------------------------------------#
 clear
 echo "###################################################################"
-echo "      Converting sounds to stereo ...                             "
+echo "      Multiplying cosine window ...                                "
 echo "###################################################################"
 echo
 
 ARGS=""
 for move_width in ${move_width_list}; do
+  ARGS=""
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
       for rotation_direction in c cc; do
@@ -97,11 +98,23 @@ for move_width in ${move_width_list}; do
       done
     done
   done
+  echo "${ARGS}" | xargs -t -P4 -n5 cosine_windowing
 done
-echo "${ARGS}" | xargs -t -P4 -n5 cosine_windowing
+echo "finished!"
+echo "${SECONDS}sec elapsed ..."
+SECONDS=0
+# -----------------------------------------コサイン窓----------------------------------------------#
+
+# ---------------------------------------dv------------------------------------------------------#
+clear
+echo "###################################################################"
+echo "      Executing dv ...                                             "
+echo "###################################################################"
+echo
 
 ARGS=""
 for move_width in ${move_width_list}; do
+  ARGS=""
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
       for rotation_direction in c cc; do
@@ -112,11 +125,23 @@ for move_width in ${move_width_list}; do
        done
      done
   done
+  echo "${ARGS}" | xargs -t -P4 -n2 dv
 done
-echo "${ARGS}" | xargs -t -P4 -n2 dv
+echo "finished!"
+echo "${SECONDS}sec elapsed ..."
+SECONDS=0
+# ---------------------------------------dv------------------------------------------------------#
+
+# ---------------------------------------ステレオ化-----------------------------------------------#
+clear
+echo "###################################################################"
+echo "      Converting sounds to stereo ...                             "
+echo "###################################################################"
+echo
 
 ARGS=""
 for move_width in ${move_width_list}; do
+  ARGS=""
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
       for rotation_direction in c cc; do
@@ -125,11 +150,22 @@ for move_width in ${move_width_list}; do
       done
     done
   done
+  echo "${ARGS}" | xargs -t -P4 -n3 mono2LR
 done
-echo "${ARGS}" | xargs -t -P4 -n3 mono2LR
+echo "finished!"
+echo "${SECONDS}sec elapsed ..."
+SECONDS=0
+# ---------------------------------------ステレオ化-----------------------------------------------#
+
+# ---------------------------------------無駄なファイルの削除--------------------------------------#
+clear
+echo "###################################################################"
+echo "      Removing useless files ...                             "
+echo "###################################################################"
 
 ARGS=""
 for move_width in ${move_width_list}; do
+  ARGS=""
   for move_velocity in ${move_velocity_list}; do
     for end_angle in ${end_angle_list}; do
       for rotation_direction in c cc; do
@@ -138,12 +174,12 @@ for move_width in ${move_width_list}; do
       done
     done
   done
+  echo "${ARGS}" | xargs -t -P4 -n4 rm
 done
-echo "${ARGS}" | xargs -t -P4 -n4 rm
 echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0
-# ---------------------------------------------------------------------------------------#
+# ---------------------------------------無駄なファイルの削除--------------------------------------#
 
 echo
 echo "completed!!"
