@@ -32,16 +32,14 @@ class MyApp extends StatelessWidget {
 }
 
 class _AngleSenderState extends State<AngleSender> {
-  static final double circleElementsFieldWidth = 800.0;
-  static final double circleElementRadius = 30.0;
-  static final int numCircleElements = 36;
+  static final double _buttonFiledRatio = 30 / 800;
+  double circleElementsFieldWidth = 800.0;
+  double circleElementRadius = 30.0;
+  int numCircleElements = 36;
 
-  ArcPainter _startPainter = ArcPainter(
-      Colors.grey[300], circleElementsFieldWidth / 2, circleElementRadius * 2);
-  ArcPainter _arcPainter = ArcPainter(Colors.lightBlueAccent[100],
-      circleElementsFieldWidth / 2, circleElementRadius * 2);
-  ArcPainter _endPainter = ArcPainter(
-      Colors.blue, circleElementsFieldWidth / 2, circleElementRadius * 2);
+  ArcPainter _startPainter = ArcPainter(Colors.grey[300]);
+  ArcPainter _arcPainter = ArcPainter(Colors.lightBlueAccent[100]);
+  ArcPainter _endPainter = ArcPainter(Colors.blue);
 
   bool _rotation = false;
   int _startDeg = -1;
@@ -130,6 +128,43 @@ class _AngleSenderState extends State<AngleSender> {
     });
   }
 
+  List<Positioned> _createCircleTexts(int numElements, double radius) {
+    // リストの初期化
+    var circleElements = new List<Positioned>();
+    // 要素数から角度を計算
+    var angle = 360.0 / numElements;
+    // ボタンの半径
+
+    for (int i = 0; i < numElements; i++) {
+      // 角度と座標を計算
+      var deg = (angle * i).toInt();
+      var x = math.cos(deg * math.pi / 180 - math.pi) *
+              (radius - circleElementRadius) +
+          radius;
+      var y = -math.sin(deg * math.pi / 180 - math.pi) *
+              (radius - circleElementRadius) +
+          radius;
+      //リストに子要素を追加
+      circleElements.add(
+        Positioned(
+          top: x - circleElementRadius,
+          left: y - circleElementRadius,
+          width: circleElementRadius * 2,
+          height: circleElementRadius * 2,
+          child: Center(
+            child: Text(
+              deg.toString(),
+              style: TextStyle(
+                fontSize: circleElementRadius / 1.5,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return circleElements;
+  }
+
   List<Positioned> _createCircleElements(int numElements, double radius) {
     // リストの初期化
     var circleElements = new List<Positioned>();
@@ -154,7 +189,8 @@ class _AngleSenderState extends State<AngleSender> {
           width: circleElementRadius * 2,
           height: circleElementRadius * 2,
           child: FlatButton(
-            child: Text(deg.toString()),
+//            child: Text(deg.toString(),style: TextStyle(fontSize: circleElementRadius/2),),
+            child: Text(""),
             onPressed: () => {_handlePressCircleElementsButton(deg)},
             shape: CircleBorder(),
           ),
@@ -165,6 +201,16 @@ class _AngleSenderState extends State<AngleSender> {
   }
 
   Widget build(BuildContext context) {
+    setState(() {
+      circleElementsFieldWidth = MediaQuery.of(context).size.width * 0.9;
+      circleElementRadius = circleElementsFieldWidth * _buttonFiledRatio;
+      _startPainter.rectRadius = circleElementsFieldWidth / 2;
+      _startPainter.strokeWidth = circleElementRadius * 2;
+      _arcPainter.rectRadius = circleElementsFieldWidth / 2;
+      _arcPainter.strokeWidth = circleElementRadius * 2;
+      _endPainter.rectRadius = circleElementsFieldWidth / 2;
+      _endPainter.strokeWidth = circleElementRadius * 2;
+    });
     return Center(
       child: Container(
         child: Column(
@@ -188,6 +234,8 @@ class _AngleSenderState extends State<AngleSender> {
                 CustomPaint(
                   painter: _endPainter,
                 ),
+                ..._createCircleTexts(
+                    numCircleElements, circleElementsFieldWidth / 2),
                 ..._createCircleElements(
                     numCircleElements, circleElementsFieldWidth / 2),
               ],
@@ -262,11 +310,11 @@ class ArcPainter extends CustomPainter {
   int endDeg = 0;
   bool rotation = false;
   Color color;
-  double rectRadius;
-  double strokeWidth;
+  double rectRadius = 800;
+  double strokeWidth = 30;
 
   @override
-  ArcPainter(this.color, this.rectRadius, this.strokeWidth);
+  ArcPainter(this.color);
 
   setArcParams(int startDeg, int endDeg, bool rotation) {
     this.startDeg = startDeg;
