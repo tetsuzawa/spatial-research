@@ -27,7 +27,7 @@ def angle_reciever():
     return jsonify({'message': 'OK'})
 
 
-@app.route('/ping')
+@app.route('/ping', methods=['GET'])
 def ping():
     return jsonify({'message': 'OK'})
 

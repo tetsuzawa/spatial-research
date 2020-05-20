@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-const API_BASE_URL = 'http://192.168.1.89:8888';
+var API_BASE_URL = 'http://172.24.176.10:8888';
 
 /* ----------------------- Response -----------------------*/
 class Response {
@@ -36,15 +36,16 @@ class Request {
 /* ----------------------- Request -----------------------*/
 
 /* ----------------------- ping用 (HTTP GET) -----------------------*/
-Future<String> getPingMessage() async {
+Future<String> getPing() async {
   final endPoint = API_BASE_URL + '/ping';
   http.Response response;
   try {
     response = await http.get(endPoint).timeout(Duration(seconds: 10));
   } on TimeoutException catch (e) {
-    return "Error: submission timeout";
-  } on Error catch (e) {
-    throw e;
+    return "Error: timeout";
+  } on Exception catch (e) {
+    print(e);
+    return "Error: failed";
   }
 
   if (response.statusCode == 200) {
@@ -72,18 +73,22 @@ Future<String> postAngle(int startDeg, int endDeg, String rotation) async {
           "Content-Type": "application/json"
         }).timeout(Duration(seconds: 10));
   } on TimeoutException catch (e) {
-    return "Timeout";
-  } on Error catch (e) {
-    throw e;
+    return "Error: timeout";
+  } on Exception catch (e) {
+    print(e);
+    return "Error: failed";
   }
 
   if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
     var messageResponse = Response.fromJson(json.decode(response.body));
     return messageResponse.message;
   } else {
-    // If that response was not OK, throw an error.
-    throw Exception('Failed to load post');
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    print(response.toString());
+    return "Error: failed";
   }
 }
 /* ----------------------- 角度送信用 (HTTP POST) -----------------------*/
