@@ -77,7 +77,7 @@ def write_DXX_file(name: str, data: np.ndarray):
 
     # DXAファイル（アスキー文字列）
     if index < 3:
-        # カンマ区切りで保存
+        # 改行区切りで保存
         data.tofile(name, sep="\n", format=format_specifiers[index])
 
     # DXBファイル（バイナリ）
