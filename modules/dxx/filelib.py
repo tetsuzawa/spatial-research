@@ -26,7 +26,7 @@ def style(name: str):
     name_ext = os.path.splitext(name)[1]
 
     if not name_ext in exts:
-        raise BadDataStyleError(f"ファイルの拡張子が不適切です。got: {name_ext}, want: {exts}")
+        raise BadDataStyleError(f"ファイルの拡張子が不適切です。 want: {exts}, got: {name_ext}")
 
     return exts.index(name_ext)
 
@@ -73,7 +73,7 @@ def write_DXX_file(name: str, data: np.ndarray):
     index = style(name)
 
     if data.dtype != dtypes[index]:
-        raise BadDataStyleError(f"データの型が拡張子と一致していません。got: {data.dtype}, want: {dtypes[index]}")
+        raise BadDataStyleError(f"データの型が拡張子と一致していません。 want: {dtypes[index]}, got: {data.dtype}")
 
     # DXAファイル（アスキー文字列）
     if index < 3:
