@@ -42,8 +42,9 @@ def main():
     # --------------- 試験音の読み込み -------------- #
     os.chdir(subject_dir + "/TS/")
 
-    mt_pattern = re.compile("mt\d{1,2}")
-    w_pattern = re.compile("w\d{1,2}")
+    # 引数の刺激条件のバリデーション
+    mt_pattern = re.compile("mt\d{2}")
+    w_pattern = re.compile("w\d{2}")
     if mt_pattern.match(stimulation_const_val):
         stimulation_var = "w"
     elif w_pattern.match(stimulation_const_val):
