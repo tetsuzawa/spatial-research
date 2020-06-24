@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 import psychometrics as psy
 
 usage = f"usage: python adaptive_procedure.py subject_dir stimulation_constant_value start_position test_number"
-example_1 = "example: python main.py /path/to/SUBJECTS/NAME mt05 45 3"
-example_2 = "example: python main.py /path/to/SUBJECTS/NAME w12 0 8"
+example_1 = "example: python adaptive_procedure.py /path/to/SUBJECTS/NAME mt05 45 3"
+example_2 = "example: python adaptive_procedure.py /path/to/SUBJECTS/NAME w12 0 8"
 
 
 def print_usage():
@@ -40,7 +40,6 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__)) + "/"  # このスクリプトのパス
     subject_dir = args[0]
     subject_name = subject_dir.split("/")[-1]
-    # stimulation_var = args[1]
     stimulation_const_val = args[1]
     start_pos = args[2]
     test_number = args[3]
@@ -148,7 +147,6 @@ def main():
     # 試験開始
     print("試験開始")
     while True:
-        # while True:
         # 試行回数読み上げ
         subprocess("say " + str(T))
 
@@ -160,17 +158,17 @@ def main():
         subprocess("2chplay " + script_dir + subject_dir + "/TS/" + test_sound)
         # 回答の入力
         answer = input()  # 標準入力
-        # 回答の入力が有効でなければもう一度再生
-        if answer != "111" and answer != "000":
+
+        if answer == "111":
+            answer_rotation = "c"
+        elif answer == "000":
+            answer_rotation = "cc"
+        else:
+            # 回答の入力が有効でなければもう一度再生
             continue
 
         # 試行回数をカウント
         T += 1
-
-        if answer == "111":
-            answer = "c"
-        elif answer == "000":
-            answer = "cc"
 
         # --------------- 試験音のパラメータ抽出 --------------- #
         # プログラム的な無駄があるが、先行研究の形式に合わせてある
@@ -195,8 +193,7 @@ def main():
 
             is_correct_str = "1" if is_correct else "0"
             answer_file.write(test_sounds_dict[X][rotation_index] + "," + move_width + "," + move_time
-                              + "," + rotation_direction + "," + start_pos + "," + str(
-                answer) + "," + is_correct_str + "\n")
+                              + "," + rotation_direction + "," + start_pos + "," + answer_rotation + "," + is_correct_str + "\n")
         # --------------- 結果の記録 --------------- #
 
         # 刺激レベルの更新
