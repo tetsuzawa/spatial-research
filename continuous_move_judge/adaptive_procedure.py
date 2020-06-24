@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# ##################################################
+# 適応法を用いた音の最小知覚移動角度の心理測定実験
+#
+# Tetsu Takizawa (tt20805@tomakomai.kosen-ac.jp)
+# 2020
+# ##################################################
+
 import sys
 import os
 import glob
@@ -12,7 +19,7 @@ import matplotlib.pyplot as plt
 
 import psychometrics as psy
 
-usage = "usage: python main.py subject_dir stimulation_constant_value start_position test_number"
+usage = f"usage: python adaptive_procedure.py subject_dir stimulation_constant_value start_position test_number"
 example_1 = "example: python main.py /path/to/SUBJECTS/NAME mt05 45 3"
 example_2 = "example: python main.py /path/to/SUBJECTS/NAME w12 0 8"
 
@@ -21,7 +28,6 @@ def print_usage():
     print(usage)
     print(example_1)
     print(example_2)
-    sys.exit(1)
 
 
 def main():
@@ -29,6 +35,7 @@ def main():
     args = sys.argv[1:]
     if len(args) != 4:
         print_usage()
+        sys.exit(1)
 
     script_dir = os.path.dirname(os.path.abspath(__file__)) + "/"  # このスクリプトのパス
     subject_dir = args[0]
