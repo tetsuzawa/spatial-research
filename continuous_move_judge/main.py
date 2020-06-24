@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 
 import psychometrics as psy
 
-usage = "usage: python main.py subject_dir stimulation_variable stimulation_constant_value start_position test_number"
-example_1 = "example: python main.py ../SUBJECTS/NAME w mt05 45 3"
-example_2 = "example: python main.py ../SUBJECTS/NAME mt w12 0  8"
+usage = "usage: python main.py subject_dir stimulation_constant_value start_position test_number"
+example_1 = "example: python main.py /path/to/SUBJECTS/NAME mt05 45 3"
+example_2 = "example: python main.py /path/to/SUBJECTS/NAME w12 0 8"
 
 
 def print_usage():
@@ -26,31 +26,39 @@ def print_usage():
 
 def main():
     # --------------- 引数の処理 -------------- #
-    args = sys.argv
-    if len(args) != 6:
+    args = sys.argv[1:]
+    if len(args) != 4:
         print_usage()
 
     script_dir = os.path.dirname(os.path.abspath(__file__)) + "/"  # このスクリプトのパス
-    subject_dir = args[1]
+    subject_dir = args[0]
     subject_name = subject_dir.split("/")[-1]
-    stimulation_var = args[2]
-    stimulation_const_val = args[3]
-    start_pos = args[4]
-    test_number = args[5]
+    # stimulation_var = args[1]
+    stimulation_const_val = args[1]
+    start_pos = args[2]
+    test_number = args[3]
     # --------------- 引数の処理 -------------- #
 
     # --------------- 試験音の読み込み -------------- #
     os.chdir(subject_dir + "/TS/")
+
+    mt_pattern = re.compile("mt\d{1,2}")
+    w_pattern = re.compile("w\d{1,2}")
+    if mt_pattern.match(stimulation_const_val):
+        stimulation_var = "w"
+    elif w_pattern.match(stimulation_const_val):
+        stimulation_var = "mt"
+    else:
+        print("error: invalid stimulation_constant_value")
+        print_usage()
+        sys.exit(1)
+
     if stimulation_var == "w":
         # move_judge_w*_mtXX_*_{start_angle}_*.DDB を取得
         test_sounds = sorted(glob.glob(f"move_judge_w*_{stimulation_const_val}_*_{start_pos}.DSB"))
-    elif stimulation_var == "mt":
+    else:
         # move_judge_wXX_mt*_*_{start_angle}_*.DDB を取得
         test_sounds = sorted(glob.glob(f"move_judge_{stimulation_const_val}_mt*_*_{start_pos}.DSB"))
-    else:
-        print("error: invalid stimulation_variable")
-        print_usage()
-        sys.exit(1)
 
     # 読み込みのエラー判定
     if len(test_sounds) == 0:
@@ -71,12 +79,9 @@ def main():
     if stimulation_var == "w":
         min_stimulation_level = min_parameter_divide.group(1).replace("w", "")
         max_stimulation_level = max_parameter_divide.group(1).replace("w", "")
-    elif stimulation_var == "mt":
+    else:
         min_stimulation_level = min_parameter_divide.group(2).replace("mt", "")
         max_stimulation_level = max_parameter_divide.group(2).replace("mt", "")
-    else:
-        print_usage()
-        sys.exit(1)
     # --------------- 試験音の刺激幅を確認 -------------- #
 
     # --------------- 試験音の最小刺激幅を確認 -------------- #
@@ -84,11 +89,8 @@ def main():
     one_level_upper_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", one_level_upper_parameter)
     if stimulation_var == "w":
         one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(1).replace("w", "")
-    elif stimulation_var == "mt":
-        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(2).replace("mt", "")
     else:
-        print_usage()
-        sys.exit(1)
+        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(2).replace("mt", "")
     min_dx = int(one_level_upper_stimulation_level) - int(min_stimulation_level)
     # --------------- 試験音の最小刺激幅を確認 -------------- #
 
@@ -100,13 +102,10 @@ def main():
         parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
         if stimulation_var == "w":
             stimulation_level = parameter_divide.group(1).replace("w", "")
-        elif stimulation_var == "mt":
+        else:
             stimulation_level = parameter_divide.group(2).replace("mt", "")
             # mtの場合、数字が大きいほど刺激レベルが小さくなるので、反転させる
             stimulation_level = str(int(max_stimulation_level) + int(min_stimulation_level) - int(stimulation_level))
-        else:
-            print_usage()
-            sys.exit(1)
         # 刺激レベルに対する[c,cc]の試験音の配列を登録
         test_sounds_dict[int(stimulation_level)] = test_sound_both
     # --------------- 刺激レベルに対する試験音の辞書登録 -------------- #
