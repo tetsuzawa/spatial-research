@@ -13,27 +13,28 @@
 # ファイルの上書き防止 && エラーが起きたら停止 && 変数の空文字列防止
 set -Ceu
 
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: bash main.sh SUBJECT_DIR LSTF_DIR \e[m \n\n"
+  printf " usage: bash main.sh SUBJECT_DIR LSTF_DIR OUT_SUBJECT_DIR\e[m \n\n"
   exit
 fi
 
 SUBJECT_DIR=$1
 LSTF_DIR=$2
+OUT_SUBJECT_DIR=$3
 
-mkdir -p ${SUBJECT_DIR}/TS ${SUBJECT_DIR}/ANSWER
+mkdir -p ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER
 
 echo "Running make_SLTF.sh ..."
 bash make_SLTF.sh ${SUBJECT_DIR} ${LSTF_DIR} # HRTFとSLTFの生成
 echo "Running liner_interpolation.sh ..."
 bash linear_interpolation.sh ${SUBJECT_DIR} # SLTFの線形補間
 echo "Running make_testsignal_move_judge0_msdv.sh ..."
-bash make_testsignal_move_judge0_msdv.sh ${SUBJECT_DIR} # 移動音の生成
+bash make_testsignal_move_judge0_msdv.sh ${SUBJECT_DIR} ${OUT_SUBJECT_DIR} # 移動音の生成
 echo "Running make_testsignal_move_judge45_msdv.sh ..."
-bash make_testsignal_move_judge45_msdv.sh ${SUBJECT_DIR} # 移動音の生成
+bash make_testsignal_move_judge45_msdv.sh ${SUBJECT_DIR} ${OUT_SUBJECT_DIR} # 移動音の生成
 echo "Running make_testsignal_move_judge90_msdv.sh ..."
-bash make_testsignal_move_judge90_msdv.sh ${SUBJECT_DIR} # 移動音の生成
+bash make_testsignal_move_judge90_msdv.sh ${SUBJECT_DIR} ${OUT_SUBJECT_DIR} # 移動音の生成
 
 echo ""
 echo "$((SECONDS/60))min $((SECONDS%60))sec elapsed"
