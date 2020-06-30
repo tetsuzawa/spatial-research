@@ -181,14 +181,14 @@ def main():
         # --------------- 試験音のパラメータ抽出 --------------- #
 
         # 正誤判定
-        is_correct = answer == rotation_direction
+        is_correct = answer_rotation == rotation_direction
 
         # 途中経過の出力
         print(f"\n刺激レベルの推定閾値: {X}")
         print(f"正誤: {is_correct}\n")
 
         # --------------- 結果の記録 --------------- #
-        with open(script_dir + subject_dir + "/ANSWER/answer_" + subject_name + "_" + test_number + ".csv",
+        with open(script_dir + subject_dir + "/ANSWER/answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + ".csv",
                   'a') as answer_file:
 
             is_correct_str = "1" if is_correct else "0"
