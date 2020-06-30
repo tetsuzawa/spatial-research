@@ -45,9 +45,9 @@ echo "###################################################################"
 echo
 
 (
-for move_width in ${move_width_list}; do
-  for move_velocity in ${move_velocity_list}; do
-    for end_angle in ${end_angle_list}; do
+for move_width in ${move_width_list[@]}; do
+  for move_velocity in ${move_velocity_list[@]}; do
+    for end_angle in ${end_angle_list[@]}; do
       echo "${SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/TS"
     done
   done
@@ -66,9 +66,9 @@ echo "###################################################################"
 echo
 
 echo "" >| input_files/input_file_move_judge.dat
-for move_width in ${move_width_list}; do
-  for move_velocity in ${move_velocity_list}; do
-    for end_angle in ${end_angle_list}; do
+for move_width in ${move_width_list[@]}; do
+  for move_velocity in ${move_velocity_list[@]}; do
+    for end_angle in ${end_angle_list[@]}; do
       for rotation_direction in c cc; do
         for LR in L R; do
           echo "TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}_${LR}.DDB" >> input_files/input_file_move_judge.dat
@@ -91,9 +91,9 @@ echo "###################################################################"
 echo
 
 (
-for move_width in ${move_width_list}; do
-  for move_velocity in ${move_velocity_list}; do
-    for end_angle in ${end_angle_list}; do
+for move_width in ${move_width_list[@]}; do
+  for move_velocity in ${move_velocity_list[@]}; do
+    for end_angle in ${end_angle_list[@]}; do
       for rotation_direction in c cc; do
         arg=${OUT_SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}
         for LR in L R; do
@@ -117,9 +117,9 @@ echo "###################################################################"
 echo
 
 (
-for move_width in ${move_width_list}; do
-  for move_velocity in ${move_velocity_list}; do
-    for end_angle in ${end_angle_list}; do
+for move_width in ${move_width_list[@]}; do
+  for move_velocity in ${move_velocity_list[@]}; do
+    for end_angle in ${end_angle_list[@]}; do
       for rotation_direction in c cc; do
         arg=${OUT_SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}
         for LR in L R; do
@@ -143,9 +143,9 @@ echo "###################################################################"
 echo
 
 (
-for move_width in ${move_width_list}; do
-  for move_velocity in ${move_velocity_list}; do
-    for end_angle in ${end_angle_list}; do
+for move_width in ${move_width_list[@]}; do
+  for move_velocity in ${move_velocity_list[@]}; do
+    for end_angle in ${end_angle_list[@]}; do
       for rotation_direction in c cc; do
         arg=${OUT_SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}
         echo "${arg}_L.DSB ${arg}_R.DSB ${arg}.DSB"
@@ -166,9 +166,9 @@ echo "      Removing useless files ...                             "
 echo "###################################################################"
 
 (
-for move_width in ${move_width_list}; do
-  for move_velocity in ${move_velocity_list}; do
-    for end_angle in ${end_angle_list}; do
+for move_width in ${move_width_list[@]}; do
+  for move_velocity in ${move_velocity_list[@]}; do
+    for end_angle in ${end_angle_list[@]}; do
       for rotation_direction in c cc; do
         arg=${OUT_SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}
         echo "${arg}_L.DDB ${arg}_R.DDB ${arg}_L.DSB ${arg}_R.DSB"
