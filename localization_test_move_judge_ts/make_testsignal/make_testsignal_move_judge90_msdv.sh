@@ -48,7 +48,7 @@ echo
 for move_width in ${move_width_list[@]}; do
   for move_velocity in ${move_velocity_list[@]}; do
     for end_angle in ${end_angle_list[@]}; do
-      echo "${SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/TS"
+      echo "${OUT_SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/TS"
     done
   done
 done
