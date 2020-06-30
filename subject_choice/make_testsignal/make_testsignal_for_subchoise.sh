@@ -26,20 +26,21 @@
 # Tetsu Takizawa (tt15219@)
 # 2020.2.19
 ##########################################################################################################
-set -eu
+set -Ceu
 
-if [ $# -ne 1 ]; then
+if [ $# -ne 3 ]; then
   printf "\e[31;1m error: bad commandline format \n"
   printf " usage: SUBJECT\e[m \n\n"
   exit
 fi
 
 SUBJECT_DIR=$1
-OUT_SUBJECT_DIR
+LSTF_DIR=$2
+OUT_SUBJECT_DIR=$3
 mkdir -p ${OUT_SUBJECT_DIR}/SLTF ${OUT_SUBJECT_DIR}/TSP ${OUT_SUBJECT_DIR}/stationary_TS ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER
 
 Move_Angle=(2 4 8 16 32)
-sound=w4s.DSB
+sound=input_files/w4s.DSB
 
 if [ ! -e $sound ];then
   echo "Error: file not exists: \`$sound\`"
@@ -61,8 +62,8 @@ for LR in L R; do
 
     SPEAKER_NUM=$((ANGLE/5%18+1)) #
     #自身のSSTF
-    timeconvo ${SUBJECT_DIR}/SSTF/cSSTF_${ANGLE}_${LR}.DDB LSTF/cinv_cLSTF_${SPEAKER_NUM}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${ANGLj}_${LR}.DDB
-    timeconvo ${SUBJECT_DIR}/HRTF/HRTF_${ANGLE}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_${ANGLj}_${LR}.DDB
+    timeconvo ${SUBJECT_DIR}/SSTF/cSSTF_${ANGLE}_${LR}.DDB ${LSTF_DIR}/cinv_cLSTF_${SPEAKER_NUM}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${ANGLE}_${LR}.DDB
+    timeconvo ${SUBJECT_DIR}/HRTF/HRTF_${ANGLE}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_${ANGLE}_${LR}.DDB
   done
 done
 #-------------------------------------------------------------------------------------------------#  
