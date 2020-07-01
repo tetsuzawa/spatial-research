@@ -23,16 +23,17 @@ set -Ceu
 
 if [ $# -ne 2 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: SUBJECT mode(0/1)\e[m \n\n"
-  exit
+  printf "usage: bash make_SLTF.sh SUBJECT_DIR LSTF_DIR OUT_SUBJECT_DIR\e[m \n\n"
+  exit 1
 fi
 
 SUBJECT_DIR=$1
 LSTF_DIR=$2
+OUT_SUBJECT_DIR=$3
 
 NUM_CPU_CORE=4
 
-mkdir -p ${SUBJECT_DIR}/HRTF ${SUBJECT_DIR}/SLTF
+mkdir -p ${SUBJECT_DIR}/HRTF ${OUT_SUBJECT_DIR}/SLTF
 
 #--------------------------------- HRTFを生成 ---------------------------------#
 clear
@@ -60,7 +61,7 @@ echo "####################################################################"
 for LR in L R; do
   for Angle in `seq 0 5 355`; do
     speaker_num=$((Angle/5%18+1))
-    echo "${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$((Angle*10))_${LR}.DDB"
+    echo "${SUBJECT_DIR}/HRTF/HRTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${OUT_SUBJECT_DIR}/SLTF/SLTF_$((Angle*10))_${LR}.DDB"
   done
 done
 ) | xargs -t -L 1 -P ${NUM_CPU_CORE} timeconvo

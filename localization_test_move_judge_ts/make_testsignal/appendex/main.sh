@@ -12,7 +12,7 @@
 if [ $# -ne 2 ]; then
   printf "\e[31;1m error: bad commandline format \n"
   printf " usage: SUBJECT mode(0/1)\e[m \n\n"
-  exit
+  exit 1
 fi
 
 mkdir -p $1/TS $1/ANSWER

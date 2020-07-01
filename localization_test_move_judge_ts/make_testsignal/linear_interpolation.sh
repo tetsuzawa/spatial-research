@@ -13,11 +13,10 @@ set -Ceu
 
 if [ $# -ne 1 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: SUBJECT mode(0/1)\e[m \n\n"
-  exit
+  printf " usage: bash linear_interpolation.sh SUBJECT_DIR\e[m \n\n"
+  exit 1
 fi
 
-SUBJECT_DIR=$1
 SUBJECT_DIR=$1
 
 NUM_CPU_CORE=4
@@ -31,7 +30,7 @@ echo "###################################################################"
 for LR in L R; do
   for Angle in `seq 0 50 3550`; do
     for i in `seq 1 9`; do
-      echo "${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB 0.$((10-i)) ${OUT_SUBJECT_DIR}/SLTF/SLTF_$((Angle+i*10/2))_${LR}.DDB"
+      echo "${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB 0.$((10-i)) ${SUBJECT_DIR}/SLTF/SLTF_$((Angle+i*10/2))_${LR}.DDB"
     done
   done
 done
