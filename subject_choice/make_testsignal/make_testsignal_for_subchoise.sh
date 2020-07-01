@@ -37,7 +37,7 @@ fi
 SUBJECT_DIR=$1
 LSTF_DIR=$2
 OUT_SUBJECT_DIR=$3
-mkdir -p ${OUT_SUBJECT_DIR}/SLTF ${OUT_SUBJECT_DIR}/TSP ${OUT_SUBJECT_DIR}/stationary_TS ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER
+mkdir -p ${SUBJECT_DIR}/SLTF ${OUT_SUBJECT_DIR}/TSP ${OUT_SUBJECT_DIR}/stationary_TS ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER
 
 Move_Angle=(2 4 8 16 32)
 sound=input_files/w4s.DSB
@@ -69,6 +69,7 @@ done
 #-------------------------------------------------------------------------------------------------#  
 
 #---------------------------------静止音の作成---------------------------------#
+echo "" >| input_files/input_file_stationary.dat
 Bar=""
 for END_ANGLE in `seq 0 30 180`; do
   clear
@@ -77,12 +78,17 @@ for END_ANGLE in `seq 0 30 180`; do
   echo "###################################################################"
   Bar=$Bar"████"; Prog="$(((END_ANGLE+30)*100/210))% |$Bar"; echo "$Prog\n"
   for LR in L R; do
-    timeconvo ${SUBJECT_DIR}/SLTF/SLTF_${END_ANGLE}_${LR}.DDB $sound ${SUBJECT_DIR}/stationary_TS/stationary_${END_ANGLE}_${LR}.DDB
+    timeconvo ${SUBJECT_DIR}/SLTF/SLTF_${END_ANGLE}_${LR}.DDB $sound ${OUT_SUBJECT_DIR}/stationary_TS/stationary_${END_ANGLE}_${LR}.DDB
     cutout_anyfile ${OUT_SUBJECT_DIR}/stationary_TS/stationary_${END_ANGLE}_${LR}.DDB 4001 28000 ${OUT_SUBJECT_DIR}/stationary_TS/stationary_${END_ANGLE}_${LR}.DDB
+    echo "stationary_TS/stationary_${END_ANGLE}_${LR}.DDB" >> input_files/input_file_stationary.dat
   done
 done
 
 clear
+if [ ! -e input_files/input_file_stationary.dat ];then
+  echo "Error: file not exists: \`input_files/input_file_stationary.dat\`"
+  exit
+fi
 scaling_max_instant_amp input_files/input_file_stationary.dat 30000 ${OUT_SUBJECT_DIR}/
 for END_ANGLE in `seq 0 30 180`; do
   clear
@@ -99,6 +105,7 @@ done
 #---------------------------------------------------------------------------------------#
 
 #---------------------------------------方向確認用音源----------------------------------------------#
+echo "" >| input_files/input_file_tsp.dat
 clear
 for END_ANGLE in `seq 0 30 180`; do
   for LR in L R; do
@@ -109,6 +116,7 @@ for END_ANGLE in `seq 0 30 180`; do
     timeconvo ${SUBJECT_DIR}/SLTF/SLTF_${END_ANGLE}_${LR}.DDB $sound /tmp/tmp_${LR}.DDB
     cutout_anyfile /tmp/tmp_${LR}.DDB 4001 28000 ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DDB
     cosine_windowing ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DDB 48 0 30 ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DDB
+    echo "TSP_${END_ANGLE}_${LR}.DDB" >> input_files/input_file_tsp.dat
   done
 done
 clear
@@ -121,7 +129,7 @@ for END_ANGLE in `seq 0 30 180`; do
   for LR in L R; do
     dv ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DDB ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DSB
   done
-  mono2LR ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_L.DSB ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_R.DSB ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGEj}.DSB
+  mono2LR ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_L.DSB ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_R.DSB ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}.DSB
   rm ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_L.DSB ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_R.DSB
 done
 #---------------------------------------------------------------------------------------#

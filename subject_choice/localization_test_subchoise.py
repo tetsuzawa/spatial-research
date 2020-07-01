@@ -54,8 +54,7 @@ def main():
     random.shuffle(test_sounds)
 
     # シャッフル後の順番の記憶
-    with open(subject_dir+"/ANSWER/random_"+times+".txt",
-              'w') as random_file:
+    with open(subject_dir+"/ANSWER/random_"+times+".txt", 'w') as random_file:
         for i in range(len(test_sounds)):
             random_file.write(test_sounds[i]+"\n")
 
