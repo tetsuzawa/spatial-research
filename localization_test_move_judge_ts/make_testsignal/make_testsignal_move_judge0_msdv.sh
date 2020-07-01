@@ -19,7 +19,7 @@ set -Ceu
 # 引数が間違っている場合終了
 if [ $# -ne 2 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf "usage: bash make_testsignal_moce_judge0_msdv.sh SUBJECT_DIR OUT_SUBJECT_DIR\e[m \n\n"
+  printf " usage: bash make_testsignal_moce_judge0_msdv.sh SUBJECT_DIR OUT_SUBJECT_DIR\e[m \n\n"
   exit 1
 fi
 
@@ -31,32 +31,34 @@ mkdir -p ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER input_files
 
 WHITE_NOISE=input_files/w14s.DSB
 # seq の -w オプションは桁合わせのゼロ埋めを有効化
-move_width_list=`seq -w 1 10`
-move_velocity_list=`seq -w 1 50`
+move_width_list=(1 2 3 4 5)
+move_velocity_list=(2 4 8 16 32)
+# move_width_list=`seq -w 1 10`
+# move_velocity_list=`seq -w 1 50`
 end_angle_list=(0)
 
 NUM_CPU_CORE=4
 
-#---------------------------------連続音の作成---------------------------------#
-clear
-echo "###################################################################"
-echo "      Creating continuous movement sounds ...                      "
-echo "###################################################################"
-echo
-
-(
-for move_width in ${move_width_list[@]}; do
-  for move_velocity in ${move_velocity_list[@]}; do
-    for end_angle in ${end_angle_list[@]}; do
-      echo "${OUT_SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/TS"
-    done
-  done
-done
-) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 continuous_move_judge_dv.py
-echo "finished!"
-echo "${SECONDS}sec elapsed ..."
-SECONDS=0
-#---------------------------------------------------------------------------------------#
+##---------------------------------連続音の作成---------------------------------#
+#clear
+#echo "###################################################################"
+#echo "      Creating continuous movement sounds ...                      "
+#echo "###################################################################"
+#echo
+#
+#(
+#for move_width in ${move_width_list[@]}; do
+#  for move_velocity in ${move_velocity_list[@]}; do
+#    for end_angle in ${end_angle_list[@]}; do
+#      echo "${OUT_SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/TS"
+#    done
+#  done
+#done
+#) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 continuous_move_judge_dv.py
+#echo "finished!"
+#echo "${SECONDS}sec elapsed ..."
+#SECONDS=0
+##---------------------------------------------------------------------------------------#
 
 #---------------------------------最大音圧の調整---------------------------------#
 clear
@@ -82,6 +84,7 @@ echo "finished!"
 echo "${SECONDS}sec elapsed ..."
 SECONDS=0
 #---------------------------------------------------------------------------------------#
+exit
 
 # -----------------------------------------コサイン窓----------------------------------------------#
 clear
