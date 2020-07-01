@@ -30,21 +30,21 @@ set -Ceu
 
 if [ $# -ne 3 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: SUBJECT\e[m \n\n"
-  exit
+  printf " usage: bash make_testsignal_for_subchoice.sh SUBJECT_DIR\e[m \n\n"
+  exit 1
 fi
 
 SUBJECT_DIR=$1
 LSTF_DIR=$2
 OUT_SUBJECT_DIR=$3
-mkdir -p ${SUBJECT_DIR}/SLTF ${OUT_SUBJECT_DIR}/TSP ${OUT_SUBJECT_DIR}/stationary_TS ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER
+mkdir -p ${OUT_SUBJECT_DIR}/SLTF ${OUT_SUBJECT_DIR}/TSP ${OUT_SUBJECT_DIR}/stationary_TS ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER
 
 Move_Angle=(2 4 8 16 32)
 sound=input_files/w4s.DSB
 
 if [ ! -e $sound ];then
   echo "Error: file not exists: \`$sound\`"
-  exit
+  exit 1
 fi
 
 #--------------------------------------------SLTFの算出--------------------------------------------#
@@ -63,7 +63,7 @@ for LR in L R; do
     SPEAKER_NUM=$((ANGLE/5%18+1)) #
     #自身のSSTF
     timeconvo ${SUBJECT_DIR}/SSTF/cSSTF_${ANGLE}_${LR}.DDB ${LSTF_DIR}/cinv_cLSTF_${SPEAKER_NUM}.DDB ${SUBJECT_DIR}/HRTF/HRTF_${ANGLE}_${LR}.DDB
-    timeconvo ${SUBJECT_DIR}/HRTF/HRTF_${ANGLE}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_${ANGLE}_${LR}.DDB
+    timeconvo ${SUBJECT_DIR}/HRTF/HRTF_${ANGLE}_${LR}.DDB ${SUBJECT_DIR}/RSTF/cinv_cRSTF_${LR}.DDB ${OUT_SUBJECT_DIR}/SLTF/SLTF_${ANGLE}_${LR}.DDB
   done
 done
 #-------------------------------------------------------------------------------------------------#  
@@ -78,7 +78,7 @@ for END_ANGLE in `seq 0 30 180`; do
   echo "###################################################################"
   Bar=$Bar"████"; Prog="$(((END_ANGLE+30)*100/210))% |$Bar"; echo "$Prog\n"
   for LR in L R; do
-    timeconvo ${SUBJECT_DIR}/SLTF/SLTF_${END_ANGLE}_${LR}.DDB $sound ${OUT_SUBJECT_DIR}/stationary_TS/stationary_${END_ANGLE}_${LR}.DDB
+    timeconvo ${OUT_SUBJECT_DIR}/SLTF/SLTF_${END_ANGLE}_${LR}.DDB $sound ${OUT_SUBJECT_DIR}/stationary_TS/stationary_${END_ANGLE}_${LR}.DDB
     cutout_anyfile ${OUT_SUBJECT_DIR}/stationary_TS/stationary_${END_ANGLE}_${LR}.DDB 4001 28000 ${OUT_SUBJECT_DIR}/stationary_TS/stationary_${END_ANGLE}_${LR}.DDB
     echo "stationary_TS/stationary_${END_ANGLE}_${LR}.DDB" >> input_files/input_file_stationary.dat
   done
@@ -87,7 +87,7 @@ done
 clear
 if [ ! -e input_files/input_file_stationary.dat ];then
   echo "Error: file not exists: \`input_files/input_file_stationary.dat\`"
-  exit
+  exit 1
 fi
 scaling_max_instant_amp input_files/input_file_stationary.dat 30000 ${OUT_SUBJECT_DIR}/
 for END_ANGLE in `seq 0 30 180`; do
@@ -113,7 +113,7 @@ for END_ANGLE in `seq 0 30 180`; do
     echo "###################################################################"
     echo "              Making sounds for direction confirmation : $END_ANGLE deg."
     echo "###################################################################"
-    timeconvo ${SUBJECT_DIR}/SLTF/SLTF_${END_ANGLE}_${LR}.DDB $sound /tmp/tmp_${LR}.DDB
+    timeconvo ${OUT_SUBJECT_DIR}/SLTF/SLTF_${END_ANGLE}_${LR}.DDB $sound /tmp/tmp_${LR}.DDB
     cutout_anyfile /tmp/tmp_${LR}.DDB 4001 28000 ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DDB
     cosine_windowing ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DDB 48 0 30 ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DDB
     echo "TSP_${END_ANGLE}_${LR}.DDB" >> input_files/input_file_tsp.dat
@@ -122,7 +122,7 @@ done
 clear
 if [ ! -e input_files/input_file_tsp.dat ];then
   echo "Error: file not exists: \`input_files/input_file_tsp.dat\`"
-  exit
+  exit 1
 fi
 scaling_max_instant_amp input_files/input_file_tsp.dat 30000 ${OUT_SUBJECT_DIR}/TSP/ > /dev/null
 for END_ANGLE in `seq 0 30 180`; do
