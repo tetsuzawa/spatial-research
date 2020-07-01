@@ -21,9 +21,9 @@
 # ファイルの上書き防止 && エラーが起きたら停止 && 変数の空文字列防止
 set -Ceu
 
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf "usage: bash make_SLTF.sh SUBJECT_DIR LSTF_DIR OUT_SUBJECT_DIR\e[m \n\n"
+  printf " usage: bash make_SLTF.sh SUBJECT_DIR LSTF_DIR OUT_SUBJECT_DIR\e[m \n\n"
   exit 1
 fi
 
