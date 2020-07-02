@@ -27,7 +27,7 @@ SUBJECT_DIR=$1
 OUT_SUBJECT_DIR=$2
 
 # データ保存用ディレクトリの作成
-mkdir -p ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER input_filess
+mkdir -p ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER input_files
 
 WHITE_NOISE=input_files/w60s.DSB
 # seq の -w オプションは桁合わせのゼロ埋めを有効化
