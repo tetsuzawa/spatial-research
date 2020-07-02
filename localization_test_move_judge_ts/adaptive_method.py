@@ -19,9 +19,9 @@ import matplotlib.pyplot as plt
 
 import psychometrics as psy
 
-usage = f"usage: python adaptive_procedure.py subject_dir stimulation_constant_value start_position test_number"
-example_1 = "example: python adaptive_procedure.py /path/to/SUBJECTS/NAME mt05 45 3"
-example_2 = "example: python adaptive_procedure.py /path/to/SUBJECTS/NAME w12 0 8"
+usage = "usage: python adaptive_method.py subject_dir stimulation_constant_value start_position test_number"
+example_1 = "example: python adaptive_method.py /path/to/SUBJECTS/NAME mt05 45 3"
+example_2 = "example: python adaptive_method.py /path/to/SUBJECTS/NAME w12 0 8"
 
 
 def print_usage():
@@ -60,6 +60,7 @@ def main():
         print_usage()
         sys.exit(1)
 
+    print(stimulation_const_val)
     if stimulation_var == "w":
         # move_judge_w*_mtXX_*_{start_angle}_*.DDB を取得
         test_sounds = sorted(
@@ -71,7 +72,7 @@ def main():
 
     # 読み込みのエラー判定
     if len(test_sounds) == 0:
-        print("試験音を読み込めませんでした。試験音のディレクトリとプログラムの引数を確認してください。")
+        print("試験音を読み込めませんでした。試験音のディレクトリとプログラムの引数を確認してください。読み込み条件:", stimulation_const_val)
         print_usage()
         sys.exit(1)
 

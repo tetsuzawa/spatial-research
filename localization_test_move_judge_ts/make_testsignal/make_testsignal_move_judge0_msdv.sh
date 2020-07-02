@@ -19,7 +19,7 @@ set -Ceu
 # 引数が間違っている場合終了
 if [ $# -ne 2 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: bash make_testsignal_moce_judge0_msdv.sh SUBJECT_DIR OUT_SUBJECT_DIR\e[m \n\n"
+  printf " usage: bash make_testsignal_move_judge0_msdv.sh SUBJECT_DIR OUT_SUBJECT_DIR\e[m \n\n"
   exit 1
 fi
 
