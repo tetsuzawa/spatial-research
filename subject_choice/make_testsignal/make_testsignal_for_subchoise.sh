@@ -107,7 +107,7 @@ done
 #---------------------------------------方向確認用音源----------------------------------------------#
 echo "" >| input_files/input_file_tsp.dat
 clear
-for END_ANGLE in `seq 0 30 180`; do
+for END_ANGLE in `seq 0 30 330`; do
   for LR in L R; do
     clear
     echo "###################################################################"
@@ -125,7 +125,7 @@ if [ ! -e input_files/input_file_tsp.dat ];then
   exit 1
 fi
 scaling_max_instant_amp input_files/input_file_tsp.dat 30000 ${OUT_SUBJECT_DIR}/TSP/ > /dev/null
-for END_ANGLE in `seq 0 30 180`; do
+for END_ANGLE in `seq 0 30 330`; do
   for LR in L R; do
     dv ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DDB ${OUT_SUBJECT_DIR}/TSP/TSP_${END_ANGLE}_${LR}.DSB
   done

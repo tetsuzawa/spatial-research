@@ -27,10 +27,10 @@ def direction_confirm():
 
     print("\n方向確認")
     subprocess("say 方向の確認を行います")
-    for i in range(7):
+    for i in range(13):
         subprocess("say " + str(i*30))
         subprocess("2chplay " + subject_dir +
-                   "/TSP/TSP_" + str(i*30) + ".DSB")
+                   "/TSP/TSP_" + str(i*30%360) + ".DSB")
 
 
 if __name__ == "__main__":
