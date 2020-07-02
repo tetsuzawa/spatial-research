@@ -26,11 +26,13 @@ import re
 from subprocess import Popen
 from datetime import datetime
 
+args = sys.argv[1:]
+subject_dir = args[0]
+times = args[1]
 
 def main():
-    args = sys.argv[1:]
-    subject_dir = args[0]
-    times = args[1]
+    global subject_dir
+    global times
 
     # 試験音のシャッフル
     test_sounds = []
@@ -49,13 +51,14 @@ def main():
     direction_confirm()
 
     # 試験
-    print("試験開始")
+    print("\n試験開始")
     for test_num in range(len(test_sounds)):
         while True:
             subprocess("say " + str(test_num+1))  # 試験番号読み上げ
             subprocess("2chplay " + subject_dir +
                        "/TS/" + test_sounds[test_num])  # 試験音再生
             answer = input()  # 標準入力
+            print(f"\ninput: {answer}\n")
 
             # 方向の抜き出し
             temp = (test_sounds[test_num]).split("_", 1)
@@ -92,6 +95,9 @@ def subprocess(cmd):
 
 
 def direction_confirm():
+    global subject_dir
+
+    print("\n方向確認")
     subprocess("say 方向の確認を行います")
     for i in range(7):
         subprocess("say " + str(i*30))
