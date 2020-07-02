@@ -104,8 +104,6 @@ def subprocess(cmd):
     popen.wait()
 
 # 方向の確認
-
-
 def direction_confirm():
     global subject_dir
 

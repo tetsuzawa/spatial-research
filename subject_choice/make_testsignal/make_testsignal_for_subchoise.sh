@@ -37,7 +37,7 @@ fi
 SUBJECT_DIR=$1
 LSTF_DIR=$2
 OUT_SUBJECT_DIR=$3
-mkdir -p ${OUT_SUBJECT_DIR}/SLTF ${OUT_SUBJECT_DIR}/TSP ${OUT_SUBJECT_DIR}/stationary_TS ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER
+mkdir -p ${SUBJECT_DIR}/HRTF ${OUT_SUBJECT_DIR}/SLTF ${OUT_SUBJECT_DIR}/TSP ${OUT_SUBJECT_DIR}/stationary_TS ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER
 
 Move_Angle=(2 4 8 16 32)
 sound=input_files/w4s.DSB
@@ -100,7 +100,7 @@ for END_ANGLE in `seq 0 30 180`; do
   done
   mono2LR ${arg}_L.DSB ${arg}_R.DSB ${arg}.DSB
   cp ${arg}.DSB ${OUT_SUBJECT_DIR}/TS/${arg##*/}.DSB
-  # rm ${arg}_L.DSB ${arg}_R.DSB > /dev/null
+  rm ${arg}_L.DSB ${arg}_R.DSB
 done
 #---------------------------------------------------------------------------------------#
 
