@@ -30,6 +30,7 @@ args = sys.argv[1:]
 subject_dir = args[0]
 times = args[1]
 
+
 def main():
     global subject_dir
     global times
@@ -70,19 +71,30 @@ def main():
                 direction_confirm()
             elif answer == "000":
                 continue
+            elif answer == "":
+                continue
+            else:
+                pass
 
             # 回答の入力
-            elif int(answer) % 10 == 0 and int(answer) <= 180 and int(answer) >= 0:
+            try:
+                if int(answer) % 10 == 0 and int(answer) <= 180 and int(answer) >= 0:
+                    pass
+                else:
+                    continue
+            except Exception as e:
+                print("入力でエラーが発生しました", e)
+                continue
 
-                if test_num == 0:  # 表の各項目の書込み
-                    with open(subject_dir+"/ANSWER/answer_"+times+".csv", 'a') as answer_file:
-                        answer_file.write("file_name" + "," + "correct_direction" +
-                                          "," + "answer_direction" + "," + "data_time" + "\n")
-
+            if test_num == 0:  # 表の各項目の書込み
                 with open(subject_dir+"/ANSWER/answer_"+times+".csv", 'a') as answer_file:
-                    answer_file.write(test_sounds[test_num] + "," + str(test_direction) + "," + str(
-                        answer) + "," + datetime.now().strftime("%H:%M:%S") + "\n")
-                break
+                    answer_file.write("file_name" + "," + "correct_direction" +
+                                      "," + "answer_direction" + "," + "data_time" + "\n")
+
+            with open(subject_dir+"/ANSWER/answer_"+times+".csv", 'a') as answer_file:
+                answer_file.write(test_sounds[test_num] + "," + str(test_direction) + "," + str(
+                    answer) + "," + datetime.now().strftime("%H:%M:%S") + "\n")
+            break
 
     subprocess("say お疲れさまでした 以上で試験は終了です")
 
