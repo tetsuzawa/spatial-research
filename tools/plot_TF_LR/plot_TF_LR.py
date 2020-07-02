@@ -10,27 +10,31 @@
 
 import argparse
 import signal
+
 import matplotlib.pyplot as plt
 
 import dxx
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+
 def main():
-    desc = """
+    desc = f"""
     伝達関数のLRの波形を比較する。(.DSA, .DFA, .DDA, .DSB, .DFB, .DDB)形式のみ対応。
     読み込む伝達関数を引数で指定して読み込む。
+    example: plot_TF_LR.py ./SLTF_0_L.DDB ./SLTF_0_R.DDB --sample 1024
     """
     # --------------- 引数の処理 -------------- #
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument("L", help="読み込む伝達関数のパス (L)。例: /path/to/SUBJECTS/NAME/SLTF_0_L.DDB")
-    parser.add_argument("R", help="読み込む伝達関数のパス (R)。例: /path/to/SUBJECTS/NAME/SLTF_0_R.DDB")
-    parser.add_argument("--sample", help="プロットする伝達関数のサンプル数 例: 2048", type=int)
+    parser.add_argument("L", help="読み込む伝達関数のパス (L)。example: /path/to/SUBJECTS/NAME/SLTF_0_L.DDB")
+    parser.add_argument("R", help="読み込む伝達関数のパス (R)。example: /path/to/SUBJECTS/NAME/SLTF_0_R.DDB")
+    parser.add_argument("--sample", help="プロットする伝達関数のサンプル数 example: 2048", type=int)
     args = parser.parse_args()
     file_L = args.L
     file_R = args.R
     sample = args.sample
     # --------------- 引数の処理 -------------- #
+
 
     data_L = dxx.read_DXX_file(file_L)
     data_R = dxx.read_DXX_file(file_R)
