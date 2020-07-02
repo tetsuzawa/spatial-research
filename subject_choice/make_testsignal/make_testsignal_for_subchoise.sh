@@ -30,7 +30,7 @@ set -Ceu
 
 if [ $# -ne 3 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: bash make_testsignal_for_subchoice.sh SUBJECT_DIR\e[m \n\n"
+  printf " usage: bash make_testsignal_for_subchoice.sh SUBJECT_DIR LSTF_DIR OUT_SUBJECT_DIR\e[m \n\n"
   exit 1
 fi
 

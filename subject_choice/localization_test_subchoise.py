@@ -33,14 +33,15 @@ def main():
     times = args[1]
 
     # 試験音のシャッフル
-    os.chdir(subject_dir + "/TS/")
     test_sounds = []
     for i in range(5):
-        test_sounds.extend(glob.glob("*"))
+        TSs = glob.glob(subject_dir + "/TS/*")
+        for string in TSs:
+            test_sounds.append(string.replace(subject_dir+"/TS/", ""))
     random.shuffle(test_sounds)
 
     # シャッフル後の順番の記憶
-    with open(subject_dir+"/ANSWER/random_"+times+".txt", 'w') as random_file:
+    with open(subject_dir+"/ANSWER/random_"+times+".txt", mode='w') as random_file:
         for i in range(len(test_sounds)):
             random_file.write(test_sounds[i]+"\n")
 
@@ -48,6 +49,7 @@ def main():
     direction_confirm()
 
     # 試験
+    print("試験開始")
     for test_num in range(len(test_sounds)):
         while True:
             subprocess("say " + str(test_num+1))  # 試験番号読み上げ
