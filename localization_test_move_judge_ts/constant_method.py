@@ -72,7 +72,8 @@ def main():
             # 試行回数読み上げ
             subprocess("say " + str(num + 1))
             # 試験音再生
-            subprocess("2chplay " + script_dir + subject_dir + "/TS/" + test_sounds[num])
+            subprocess("2chplay " + script_dir +
+                       subject_dir + "/TS/" + test_sounds[num])
             # 回答の入力
             answer = input()  # 標準入力
 
@@ -85,7 +86,8 @@ def main():
                 continue
 
             # --------------- 試験音のパラメータ抽出 --------------- #
-            parameter = test_sounds[num].replace("move_judge_", "").replace(".DSB", "")
+            parameter = test_sounds[num].replace(
+                "move_judge_", "").replace(".DSB", "")
             parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
             move_width = parameter_divide.group(1).replace("w", "")
             move_time = parameter_divide.group(2).replace("mt", "")
@@ -99,7 +101,7 @@ def main():
                       'a') as answer_file:
 
                 answer_file.write(test_sounds[num] + "," + move_width + "," + move_time
-                                  + "," + rotation_direction + "," + start_pos + "," + answer_rotation + "," + is_correct + "\n")
+                                  + "," + start_pos + "," + rotation_direction + "," + answer_rotation + "," + is_correct_str + "\n")
             # -------------------- 結果の記録 -------------------- #
 
             # 途中経過の出力

@@ -62,10 +62,12 @@ def main():
 
     if stimulation_var == "w":
         # move_judge_w*_mtXX_*_{start_angle}_*.DDB を取得
-        test_sounds = sorted(glob.glob(f"move_judge_w*_{stimulation_const_val}_*_{start_pos}.DSB"))
+        test_sounds = sorted(
+            glob.glob(f"move_judge_w*_{stimulation_const_val}_*_{start_pos}.DSB"))
     else:
         # move_judge_wXX_mt*_*_{start_angle}_*.DDB を取得
-        test_sounds = sorted(glob.glob(f"move_judge_{stimulation_const_val}_mt*_*_{start_pos}.DSB"))
+        test_sounds = sorted(
+            glob.glob(f"move_judge_{stimulation_const_val}_mt*_*_{start_pos}.DSB"))
 
     # 読み込みのエラー判定
     if len(test_sounds) == 0:
@@ -79,8 +81,10 @@ def main():
     # --------------- 試験音の読み込み -------------- #
 
     # --------------- 試験音の刺激幅を確認 -------------- #
-    min_parameter = test_sounds[0, 0].replace("move_judge_", "").replace(".DSB", "")
-    max_parameter = test_sounds[-1, 0].replace("move_judge_", "").replace(".DSB", "")
+    min_parameter = test_sounds[0, 0].replace(
+        "move_judge_", "").replace(".DSB", "")
+    max_parameter = test_sounds[-1,
+                                0].replace("move_judge_", "").replace(".DSB", "")
     min_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", min_parameter)
     max_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", max_parameter)
     if stimulation_var == "w":
@@ -92,27 +96,34 @@ def main():
     # --------------- 試験音の刺激幅を確認 -------------- #
 
     # --------------- 試験音の最小刺激幅を確認 -------------- #
-    one_level_upper_parameter = test_sounds[1, 0].replace("move_judge_", "").replace(".DSB", "")
-    one_level_upper_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", one_level_upper_parameter)
+    one_level_upper_parameter = test_sounds[1, 0].replace(
+        "move_judge_", "").replace(".DSB", "")
+    one_level_upper_parameter_divide = re.search(
+        "(.*)_(.*)_(.*)_(.*)", one_level_upper_parameter)
     if stimulation_var == "w":
-        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(1).replace("w", "")
+        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(
+            1).replace("w", "")
     else:
-        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(2).replace("mt", "")
-    min_dx = int(one_level_upper_stimulation_level) - int(min_stimulation_level)
+        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(
+            2).replace("mt", "")
+    min_dx = int(one_level_upper_stimulation_level) - \
+        int(min_stimulation_level)
     # --------------- 試験音の最小刺激幅を確認 -------------- #
 
     # --------------- 刺激レベルに対する試験音の辞書登録 -------------- #
     test_sounds_dict = {}
     for test_sound_both in test_sounds:
         # 時計回りの試験音だけ読み込んで刺激レベルを確認
-        parameter = test_sound_both[0].replace("move_judge_", "").replace(".DSB", "")
+        parameter = test_sound_both[0].replace(
+            "move_judge_", "").replace(".DSB", "")
         parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
         if stimulation_var == "w":
             stimulation_level = parameter_divide.group(1).replace("w", "")
         else:
             stimulation_level = parameter_divide.group(2).replace("mt", "")
             # mtの場合、数字が大きいほど刺激レベルが小さくなるので、反転させる
-            stimulation_level = str(int(max_stimulation_level) + int(min_stimulation_level) - int(stimulation_level))
+            stimulation_level = str(
+                int(max_stimulation_level) + int(min_stimulation_level) - int(stimulation_level))
         # 刺激レベルに対する[c,cc]の試験音の配列を登録
         test_sounds_dict[int(stimulation_level)] = test_sound_both
     # --------------- 刺激レベルに対する試験音の辞書登録 -------------- #
@@ -172,7 +183,8 @@ def main():
 
         # --------------- 試験音のパラメータ抽出 --------------- #
         # プログラム的な無駄があるが、先行研究の形式に合わせてある
-        parameter = test_sounds_dict[X][rotation_index].replace("move_judge_", "").replace(".DSB", "")
+        parameter = test_sounds_dict[X][rotation_index].replace(
+            "move_judge_", "").replace(".DSB", "")
         parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
         move_width = parameter_divide.group(1).replace("w", "")
         move_time = parameter_divide.group(2).replace("mt", "")
@@ -193,7 +205,7 @@ def main():
 
             is_correct_str = "1" if is_correct else "0"
             answer_file.write(test_sounds_dict[X][rotation_index] + "," + move_width + "," + move_time
-                              + "," + rotation_direction + "," + start_pos + "," + answer_rotation + "," + is_correct_str + "\n")
+                              + "," + start_pos + "," + rotation_direction + "," + answer_rotation + "," + is_correct_str + "\n")
         # --------------- 結果の記録 --------------- #
 
         # 刺激レベルの更新
