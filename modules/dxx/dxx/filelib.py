@@ -11,9 +11,9 @@ import os
 
 import numpy as np
 
-exts = [".DSA", ".DFA", ".DDA", ".DSB", ".DFB", ".DDB"]
-dtypes = [np.int16, np.float32, np.float64, np.int16, np.float32, np.float64]
-format_specifiers = ["%d", "%e", "%e"]
+_exts = [".DSA", ".DFA", ".DDA", ".DSB", ".DFB", ".DDB"]
+_dtypes = [np.int16, np.float32, np.float64, np.int16, np.float32, np.float64]
+_format_specifiers = ["%d", "%e", "%e"]
 
 
 class BadDataStyleError(Exception):
@@ -21,21 +21,22 @@ class BadDataStyleError(Exception):
     pass
 
 
-def style(name: str):
+def _style(name: str):
     """ファイルの拡張子を確認する関数。拡張子が不適切であれば例外を発生させる。"""
     name_ext = os.path.splitext(name)[1]
 
-    if not name_ext in exts:
-        raise BadDataStyleError(f"ファイルの拡張子が不適切です。 want: {exts}, got: {name_ext}")
+    if not name_ext in _exts:
+        raise BadDataStyleError(f"ファイルの拡張子が不適切です。 want: {_exts}, got: {name_ext}")
 
-    return exts.index(name_ext)
+    return _exts.index(name_ext)
 
 
 def len_file(name: str) -> int:
     """データの長さを確認する関数
 
     example:
-        num_sample = len_file("example.DSB")
+        import dxx
+        num_sample = dxx.len_file("example.DSB")
     """
     data = read_DXX_file(name)
     return len(data)
@@ -45,21 +46,22 @@ def read_DXX_file(name: str) -> np.ndarray:
     """.DXXファイルを読み込む関数
 
     example:
-        data = read_DXX_file("example.DSB")
+        import dxx
+        data = dxx.read_DXX_file("example.DSB")
     """
 
-    index = style(name)
+    index = _style(name)
 
     # DXAファイル（アスキー文字列）
     if index < 3:
         with open(name, "r") as f:
-            data = np.fromfile(f, dtypes[index], -1)
+            data = np.fromfile(f, _dtypes[index], -1)
         return data
 
     # DXBファイル（バイナリ）
     else:
         with open(name, "rb") as f:
-            data = np.fromfile(f, dtypes[index], -1)
+            data = np.fromfile(f, _dtypes[index], -1)
         return data
 
 
@@ -67,18 +69,20 @@ def write_DXX_file(name: str, data: np.ndarray):
     """.DXXファイルを書き込む関数
 
     example:
-        write_DXX_file("example.DDB", data)
+        import dxx
+        data = np.random.rand(1024)
+        dxx.write_DXX_file("example.DDB", data)
     """
 
-    index = style(name)
+    index = _style(name)
 
-    if data.dtype != dtypes[index]:
-        raise BadDataStyleError(f"データの型が拡張子と一致していません。 want: {dtypes[index]}, got: {data.dtype}")
+    if data.dtype != _dtypes[index]:
+        raise BadDataStyleError(f"データの型が拡張子と一致していません。 want: {_dtypes[index]}, got: {data.dtype}")
 
     # DXAファイル（アスキー文字列）
     if index < 3:
         # 改行区切りで保存
-        data.tofile(name, sep="\n", format=format_specifiers[index])
+        data.tofile(name, sep="\n", format=_format_specifiers[index])
 
     # DXBファイル（バイナリ）
     else:
