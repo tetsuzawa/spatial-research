@@ -69,7 +69,7 @@ done
 #-------------------------------------------------------------------------------------------------#  
 
 #---------------------------------静止音の作成---------------------------------#
-echo "" >| input_files/input_file_stationary.dat
+printf "" >| input_files/input_file_stationary.dat
 Bar=""
 for END_ANGLE in `seq 0 30 180`; do
   clear
@@ -100,12 +100,15 @@ for END_ANGLE in `seq 0 30 180`; do
   done
   mono2LR ${arg}_L.DSB ${arg}_R.DSB ${arg}.DSB
   cp ${arg}.DSB ${OUT_SUBJECT_DIR}/TS/${arg##*/}.DSB
-  rm ${arg}_L.DSB ${arg}_R.DSB
+#  rm ${arg}_L.DSB ${arg}_R.DSB
 done
 #---------------------------------------------------------------------------------------#
 
+echo "tmp end"
+exit 1
+
 #---------------------------------------方向確認用音源----------------------------------------------#
-echo "" >| input_files/input_file_tsp.dat
+printf "" >| input_files/input_file_tsp.dat
 clear
 for END_ANGLE in `seq 0 30 330`; do
   for LR in L R; do
