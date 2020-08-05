@@ -38,8 +38,9 @@ def main():
     test_sounds = []
     for i in range(5):
         test_sounds.extend(glob.glob("*"))
+    os.chdir("../../..")
 
-    with open(subject_dir+"/ANSWER/answer_"+args[1]+"_"+times+".csv", 'r') as answer_file:
+    with open(subject_dir+"/ANSWER/answer_"+times+".csv", 'r') as answer_file:
 
         reader = csv.reader(answer_file)
         temp2 = [row for row in reader]
@@ -75,7 +76,7 @@ def main():
         # 平均定位誤差の計算(角度につき5回行っているため、合計を5で割る) ex.LE_ave[1]=10なら30°における平均定位誤差が30°
         LE_ave[n] = LE_sum[n]/test_count[n]
 
-    with open(subject_dir+"/ANSWER/answer_"+args[1]+"_"+times+".csv", 'r') as answer_file:
+    with open(subject_dir+"/ANSWER/answer_"+times+".csv", 'r') as answer_file:
 
         reader = csv.reader(answer_file)
         temp2 = [row for row in reader]
