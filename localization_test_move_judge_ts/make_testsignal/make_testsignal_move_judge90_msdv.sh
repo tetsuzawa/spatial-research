@@ -67,7 +67,7 @@ echo "      Adjusting max sound pressure ...                             "
 echo "###################################################################"
 echo
 
-echo "" >| input_files/input_file_move_judge.dat
+printf "" >| input_files/input_file_move_judge.dat
 for move_width in ${move_width_list[@]}; do
   for move_velocity in ${move_velocity_list[@]}; do
     for end_angle in ${end_angle_list[@]}; do
