@@ -139,3 +139,6 @@ def main():
 def subprocess(cmd):
     popen = Popen(cmd.split())
     popen.wait()
+
+if __name__=="__main__":
+    main()
