@@ -1,17 +1,8 @@
 # flutter-angle-sender
-音像定位実験用の角度送信モバイルアプリ
+音像定位実験用の角度送信モバイルアプリ。
 
-A new Flutter project.
+研究で行う実験を効率化するために制作した。
 
-## Getting Started
+Flutterを使用している。
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![](https://user-images.githubusercontent.com/38237246/93049334-bf6a4d00-f69b-11ea-97ab-830ec5f7301a.gif)
