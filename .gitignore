@@ -1234,3 +1234,5 @@ Backup of *.doc*
 # 3D Images
 *.3dm
 *.max
+
+SUBJECTS/
