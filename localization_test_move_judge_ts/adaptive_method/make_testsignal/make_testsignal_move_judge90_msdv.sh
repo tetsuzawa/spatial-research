@@ -54,9 +54,6 @@ for move_width in ${move_width_list[@]}; do
   done
 done
 ) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 continuous_move_judge_dv.py
-echo "finished!"
-echo "${SECONDS}sec elapsed ..."
-SECONDS=0
 #---------------------------------------------------------------------------------------#
 
 #---------------------------------最大音圧の調整---------------------------------#
@@ -77,9 +74,6 @@ for move_width in ${move_width_list[@]}; do
   done
 done
 scaling_max_instant_amp input_files/input_file_move_judge.dat 30000 ${OUT_SUBJECT_DIR}/
-echo "finished!"
-echo "${SECONDS}sec elapsed ..."
-SECONDS=0
 #---------------------------------------------------------------------------------------#
 
 # -----------------------------------------コサイン窓----------------------------------------------#
@@ -125,9 +119,6 @@ for move_width in ${move_width_list[@]}; do
   done
 done
 ) | xargs -t -L 1 -P ${NUM_CPU_CORE} dv
-echo "finished!"
-echo "${SECONDS}sec elapsed ..."
-SECONDS=0
 # ---------------------------------------dv------------------------------------------------------#
 
 # ---------------------------------------ステレオ化-----------------------------------------------#
@@ -147,9 +138,6 @@ for move_width in ${move_width_list[@]}; do
   done
 done
 ) | xargs -t -L 1 -P ${NUM_CPU_CORE} mono2LR
-echo "finished!"
-echo "${SECONDS}sec elapsed ..."
-SECONDS=0
 # ---------------------------------------ステレオ化-----------------------------------------------#
 
 # ---------------------------------------無駄なファイルの削除--------------------------------------#
@@ -168,12 +156,7 @@ for move_width in ${move_width_list[@]}; do
   done
 done
 ) | xargs -t -L 1 -P ${NUM_CPU_CORE} rm
-echo "finished!"
-echo "${SECONDS}sec elapsed ..."
-SECONDS=0
 # ---------------------------------------無駄なファイルの削除--------------------------------------#
 
 echo
 echo "completed!!"
-
-
