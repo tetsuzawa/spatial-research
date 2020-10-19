@@ -1,12 +1,14 @@
 # dxx
 
-## 更新履歴
+dxx is a library for converting binary files
+
+## Changes
 
 ### v1.0.0
 
-- リリース
+- release
 
 ### v1.1.0
 
-- 一部の関数と変数を参照不可にした
+- Made some functions and variables unreferenceable
 
