@@ -26,16 +26,16 @@ fi
 SUBJECT_DIR=$1
 OUT_SUBJECT_DIR=$2
 
-# データ保存用ディレクトリの作成
-mkdir -p ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER input_files
-
 WHITE_NOISE=input_files/w35s.DSB
 # seq の -w オプションは桁合わせのゼロ埋めを有効化
 # move_width_list=(1 2 3 4 5)
 # move_velocity_list=(2 4 8 16 32)
 move_width_list=`seq -w 1 30`
 move_velocity_list=`seq -w 1 50`
-end_angle_list=(45)
+end_angle=45
+
+# データ保存用ディレクトリの作成
+mkdir -p ${OUT_SUBJECT_DIR}/pos_${end_angle}/TS ${OUT_SUBJECT_DIR}/pos_${end_angle}/ANSWER input_files
 
 NUM_CPU_CORE=4
 
@@ -49,9 +49,7 @@ echo
 (
 for move_width in ${move_width_list[@]}; do
   for move_velocity in ${move_velocity_list[@]}; do
-    for end_angle in ${end_angle_list[@]}; do
-      echo "${OUT_SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/TS"
-    done
+    echo "${OUT_SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/pos_${end_angle}/TS"
   done
 done
 ) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 continuous_move_judge_dv.py
@@ -70,11 +68,9 @@ echo
 printf "" >| input_files/input_file_move_judge.dat
 for move_width in ${move_width_list[@]}; do
   for move_velocity in ${move_velocity_list[@]}; do
-    for end_angle in ${end_angle_list[@]}; do
-      for rotation_direction in c cc; do
-        for LR in L R; do
-          printf "TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}_${LR}.DDB\n" >> input_files/input_file_move_judge.dat
-        done
+    for rotation_direction in c cc; do
+      for LR in L R; do
+        printf "${end_angle}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}_${LR}.DDB\n" >> input_files/input_file_move_judge.dat
       done
     done
   done
@@ -95,12 +91,10 @@ echo
 (
 for move_width in ${move_width_list[@]}; do
   for move_velocity in ${move_velocity_list[@]}; do
-    for end_angle in ${end_angle_list[@]}; do
-      for rotation_direction in c cc; do
-        arg=$(printf "${OUT_SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}")
-        for LR in L R; do
-          echo "${arg}_${LR}.DDB 48 0 30 ${arg}_${LR}.DDB"
-        done
+    for rotation_direction in c cc; do
+      arg=$(printf "${OUT_SUBJECT_DIR}/${end_angle}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}")
+      for LR in L R; do
+        echo "${arg}_${LR}.DDB 48 0 30 ${arg}_${LR}.DDB"
       done
     done
   done
@@ -121,13 +115,11 @@ echo
 (
 for move_width in ${move_width_list[@]}; do
   for move_velocity in ${move_velocity_list[@]}; do
-    for end_angle in ${end_angle_list[@]}; do
-      for rotation_direction in c cc; do
-        arg=$(printf "${OUT_SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}")
-        for LR in L R; do
-          echo "${arg}_${LR}.DDB ${arg}_${LR}.DSB"
-        done
-       done
+    for rotation_direction in c cc; do
+      arg=$(printf "${OUT_SUBJECT_DIR}/${end_angle}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}")
+      for LR in L R; do
+        echo "${arg}_${LR}.DDB ${arg}_${LR}.DSB"
+      done
      done
   done
 done
@@ -147,11 +139,9 @@ echo
 (
 for move_width in ${move_width_list[@]}; do
   for move_velocity in ${move_velocity_list[@]}; do
-    for end_angle in ${end_angle_list[@]}; do
-      for rotation_direction in c cc; do
-        arg=$(printf "${OUT_SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}")
-        echo "${arg}_L.DSB ${arg}_R.DSB ${arg}.DSB"
-      done
+    for rotation_direction in c cc; do
+      arg=$(printf "${OUT_SUBJECT_DIR}/${end_angle}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}")
+      echo "${arg}_L.DSB ${arg}_R.DSB ${arg}.DSB"
     done
   done
 done
@@ -170,11 +160,9 @@ echo "###################################################################"
 (
 for move_width in ${move_width_list[@]}; do
   for move_velocity in ${move_velocity_list[@]}; do
-    for end_angle in ${end_angle_list[@]}; do
-      for rotation_direction in c cc; do
-        arg=$(printf "${OUT_SUBJECT_DIR}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}")
-        echo "${arg}_L.DDB ${arg}_R.DDB ${arg}_L.DSB ${arg}_R.DSB"
-      done
+    for rotation_direction in c cc; do
+      arg=$(printf "${OUT_SUBJECT_DIR}/${end_angle}/TS/move_judge_w${move_width}_mt${move_velocity}_${rotation_direction}_${end_angle}")
+      echo "${arg}_L.DDB ${arg}_R.DDB ${arg}_L.DSB ${arg}_R.DSB"
     done
   done
 done
