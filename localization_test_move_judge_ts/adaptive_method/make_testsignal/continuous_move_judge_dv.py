@@ -69,16 +69,19 @@ def main():
 
             for angle in range(movement_angle * 2 - 1):
                 data_angle = angle % ((movement_width * 2) * 2)  # ノコギリ波を作成
-                if data_angle > (movement_width * 2): data_angle = (movement_width * 2) * 2 - data_angle  # ノコギリ波から三角波を作成
-                if direction is 'cc': data_angle = -data_angle
+                if data_angle > (movement_width * 2):
+                    data_angle = (movement_width * 2) * 2 - data_angle  # ノコギリ波から三角波を作成
+                if direction is 'cc':
+                    data_angle = -data_angle
                 data_angle = data_angle / 2
-                if data_angle < 0: data_angle += 360  # 角度が負のとき360を加算
+                if data_angle < 0:
+                    data_angle += 3600  # 角度が負のとき360を加算
 
                 # SLTFの読み込み
-                with open(subject + "/SLTF/SLTF_" + str(int((end_angle + data_angle) * 10) % 3600) + "_" + LR + ".DDB",
+                with open(subject + "/SLTF/SLTF_" + str(int(end_angle + data_angle) % 3600) + "_" + LR + ".DDB",
                           'rb') as SLTF_bin:
                     SLTF = np.frombuffer(SLTF_bin.read(), dtype=np.float64)
-                    angle_list.append(str(int((end_angle + data_angle) * 10) % 3600))  # 使ったSLTFを最後に表示するためのリストを作成
+                    angle_list.append(str(int(end_angle + data_angle) % 3600))  # 使ったSLTFを最後に表示するためのリストを作成
 
                 # Fadein-Fadeout #####################################################################################
                 # 音データと伝達関数の畳込み
@@ -89,7 +92,8 @@ def main():
 
                 # 前の角度のfadeout部と現在の角度のfadein部の加算
                 fadein = [sound_SLTF[i] * fadein_fil[i] for i in range(overlap_time)]
-                for i in range(overlap_time): move_out[(duration_time + overlap_time) * angle + i] += fadein[i]
+                for i in range(overlap_time):
+                    move_out[(duration_time + overlap_time) * angle + i] += fadein[i]
 
                 # 持続時間
                 move_out.extend(sound_SLTF[overlap_time:len(sound_SLTF) - overlap_time])
@@ -108,10 +112,10 @@ def main():
             # out = [(out[n]/data_max*28000) for n in range(len(out))]
             out = np.array(out).astype(np.float64)  # float64バイナリに変換
             # DDBファイルに書き出し
-            out_file = outdir + "/move_judge_w" + str(movement_width).zfill(2) + "_mt" + str(
-                move_velocity).zfill(2) + "_" + direction + "_" + str(end_angle) + "_" + LR + ".DDB"
+            out_file = outdir + "/move_judge_w" + str(movement_width).zfill(3) + "_mt" + str(
+                move_velocity).zfill(3) + "_" + direction + "_" + str(end_angle) + "_" + LR + ".DDB"
             with open(out_file, 'wb') as data:
-                data.write(out)
+                data.write(out.tobytes())
                 print(out_file + ': length=' + str(len(out)))
                 print('Used angle:' + str(angle_list))
             ##########################################################################################################
