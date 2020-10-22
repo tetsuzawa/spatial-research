@@ -106,8 +106,7 @@ def main():
     else:
         one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(
             2).replace("mt", "")
-    min_dx = int(one_level_upper_stimulation_level) - \
-             int(min_stimulation_level)
+    min_dx = int(one_level_upper_stimulation_level) - int(min_stimulation_level)
     # --------------- 試験音の最小刺激幅を確認 -------------- #
 
     # --------------- 刺激レベルに対する試験音の辞書登録 -------------- #
@@ -131,7 +130,7 @@ def main():
     # --------------- 試験音の初期刺激幅を決定 -------------- #
     # 2のべき乗にしている理由はPEST法のアルゴリズムの制約によるもの
     # 詳しくは津村尚志 "最近の聴覚心理実験における新しい測定法"（1984)を参照
-    if min_dx * (2 ** 4) < len(test_sounds_dict):
+    if 2 ** 4 < len(test_sounds_dict):
         init_dx_coef = 2 ** 4
     else:
         for i in range(1, 5):
