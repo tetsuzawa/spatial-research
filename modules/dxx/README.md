@@ -12,3 +12,10 @@ dxx is a library for converting binary files
 
 - Made some functions and variables unreferenceable
 
+### v1.2.0
+
+- Add commandline tool
+
+### v1.2.1
+
+- Fix bug
