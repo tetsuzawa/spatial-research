@@ -37,10 +37,11 @@ def main():
     end_angle = int(args[5])
     outdir = args[6]  # 出力先
     movement_angle = movement_width * repeat_times + 1  # 移動角度
+    sampling_freq = 48  # サンプリング周波数[kHz]
 
-    dwell_time = move_time * 48 / (movement_width * repeat_times * 2 + 1)  # 1度動くのに必要な時間　速度の逆数
-    duration_time = int(dwell_time * 63 / 64)  # 持続時間
-    overlap_time = int(dwell_time * 1 / 64)  # 切り替え時間
+    dwell_time = move_time * sampling_freq / (movement_width * repeat_times * 2 + 1)  # 1度動くのに必要な時間　速度の逆数
+    duration_time = int(dwell_time * 63 / 64)  # 持続時間 (63/64)
+    overlap_time = int(dwell_time * 1 / 64)  # 切り替え時間 (1/64)
 
     present_time = int(movement_angle * dwell_time)  # 提示時間
 
