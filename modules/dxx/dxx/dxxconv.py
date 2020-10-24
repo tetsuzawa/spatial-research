@@ -19,6 +19,7 @@ import numpy as np
 
 import dxx
 
+
 def main():
     desc = """
     .DXXや.wavを相互変換する。
