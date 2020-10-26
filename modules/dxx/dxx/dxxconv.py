@@ -35,7 +35,7 @@ def main():
     # read input
     input_ext = os.path.splitext(input)[-1]
     if input_ext in dxx.exts:
-        data = dxx.read_DXX_file(input)
+        data = dxx.read(input)
         input_type = dxx.dtypes[dxx.exts.index(input_ext)]
 
     elif input_ext == ".wav":
@@ -57,7 +57,7 @@ def main():
             data = int16_to_float32(data)
         elif input_type == np.int16 and output_type == np.float64:
             data = int16_to_float64(data)
-        dxx.write_DXX_file(output, data)
+        dxx.write(output, data)
 
     elif output_ext == ".wav":
         if input_type == np.float32 or input_type == np.float64:
