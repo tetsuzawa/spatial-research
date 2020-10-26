@@ -19,3 +19,7 @@ dxx is a library for converting binary files
 ### v1.2.1
 
 - Fix bug
+
+### v1.2.2
+
+- Refactor API name
