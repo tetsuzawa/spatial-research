@@ -8,7 +8,7 @@ setup(
     install_requires=["numpy", "SoundFile"],
     entry_points={
         "console_scripts": [
-            "dxxconv = dxx.dxxconv:main"
+            "dxxconv = dxx.dxxconv:main",
             "len_file_dxx = dxx.len_file_dxx:main"
         ]
     },
