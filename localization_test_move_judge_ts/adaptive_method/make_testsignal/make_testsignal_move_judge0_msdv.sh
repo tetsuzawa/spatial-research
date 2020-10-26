@@ -94,8 +94,7 @@ for move_width in ${move_width_list[@]}; do
     done
   done
 done
-#) | xargs -t -L 1 -P ${NUM_CPU_CORE} cosine_windowing
-) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 /Users/tetsu/repo/research/spatial-research/tools/cosine_windowing/cosine_windowing.py
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 cosine_windowing.py
 # -----------------------------------------コサイン窓----------------------------------------------#
 
 # ---------------------------------------dv------------------------------------------------------#
