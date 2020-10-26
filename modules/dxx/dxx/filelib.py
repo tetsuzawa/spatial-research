@@ -47,7 +47,7 @@ def read(filename: str) -> np.ndarray:
 
     example:
         import dxx
-        data = dxx.read_DXX_file("example.DSB")
+        data = dxx.read("example.DSB")
     """
 
     index = _style(filename)
@@ -71,7 +71,7 @@ def write(filename: str, data: np.ndarray):
     example:
         import dxx
         data = np.random.rand(1024)
-        dxx.write_DXX_file("example.DDB", data)
+        dxx.write("example.DDB", data)
     """
 
     index = _style(filename)

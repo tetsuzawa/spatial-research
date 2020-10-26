@@ -31,3 +31,7 @@ dxx is a library for converting binary files
 ### v1.3.2
 
 - Fix setup script
+
+### v1.3.2
+
+- Fix example usage
