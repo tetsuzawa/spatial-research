@@ -20,6 +20,10 @@ dxx is a library for converting binary files
 
 - Fix bug
 
-### v1.2.2
+### v1.3.0
 
 - Refactor API name
+
+### v1.3.1
+
+- Add len_file_dxx command
