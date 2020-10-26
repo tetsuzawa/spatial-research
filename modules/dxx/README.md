@@ -27,3 +27,7 @@ dxx is a library for converting binary files
 ### v1.3.1
 
 - Add len_file_dxx command
+
+### v1.3.2
+
+- Fix setup script
