@@ -50,13 +50,6 @@ def main():
     # write output
     output_ext = os.path.splitext(output)[-1]
     if output_ext in dxx.exts:
-        output_type = dxx.dtypes[dxx.exts.index(output_ext)]
-        if (input_type == np.float32 or input_type == np.float64) and output_type == np.int16:
-            data = float_to_int16(data)
-        elif input_type == np.int16 and output_type == np.float32:
-            data = int16_to_float32(data)
-        elif input_type == np.int16 and output_type == np.float64:
-            data = int16_to_float64(data)
         dxx.write(output, data)
 
     elif output_ext == ".wav":

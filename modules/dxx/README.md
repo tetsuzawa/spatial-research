@@ -35,3 +35,11 @@ dxx is a library for converting binary files
 ### v1.3.2
 
 - Fix example usage
+
+### v1.3.3
+
+- Fix bug usage
+
+### v1.3.4
+
+- Add data type coversion function

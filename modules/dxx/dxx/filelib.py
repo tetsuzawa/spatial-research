@@ -76,8 +76,14 @@ def write(filename: str, data: np.ndarray):
 
     index = _style(filename)
 
-    if data.dtype != dtypes[index]:
-        raise BadDataStyleError(f"データの型が拡張子と一致していません。 want: {dtypes[index]}, got: {data.dtype}")
+    data_type = data.dtype
+    output_type = dtypes[index]
+    if (data_type == np.float32 or data_type == np.float64) and output_type == np.int16:
+        data = _float_to_int16(data)
+    elif data_type == np.int16 and output_type == np.float32:
+        data = _int16_to_float32(data)
+    elif data_type == np.int16 and output_type == np.float64:
+        data = _int16_to_float64(data)
 
     # DXAファイル（アスキー文字列）
     if index < 3:
@@ -87,3 +93,29 @@ def write(filename: str, data: np.ndarray):
     # DXBファイル（バイナリ）
     else:
         data.tofile(filename)
+
+
+def _float_to_int16(data: np.ndarray) -> np.ndarray:
+    amp = 2 ** 15 - 1  # default amp for .DSB
+    max_data = np.abs(data).max()
+    min_data = np.abs(data).min()
+    data = (data - min_data) / (max_data - min_data) * amp
+    return data.astype(np.int16)
+
+
+def _int16_to_float32(data: np.ndarray) -> np.ndarray:
+    amp = 10000.0  # default amp for .DFB
+    data = data.astype(np.float32)
+    max_data = np.abs(data).max()
+    min_data = np.abs(data).min()
+    data = (data - min_data) / (max_data - min_data) * amp
+    return data
+
+
+def _int16_to_float64(data: np.ndarray) -> np.ndarray:
+    amp = 10000.0  # default amp for .DDB
+    data = data.astype(np.float64)
+    max_data = np.abs(data).max()
+    min_data = np.abs(data).min()
+    data = (data - min_data) / (max_data - min_data) * amp
+    return data
