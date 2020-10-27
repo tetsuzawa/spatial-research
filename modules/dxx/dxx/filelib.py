@@ -84,6 +84,8 @@ def write(filename: str, data: np.ndarray):
         data = _int16_to_float32(data)
     elif data_type == np.int16 and output_type == np.float64:
         data = _int16_to_float64(data)
+    else:
+        BadDataStyleError(f"want: np.int16 or np.float32 or np.float64, got: ", data_type)
 
     # DXAファイル（アスキー文字列）
     if index < 3:
