@@ -43,3 +43,7 @@ dxx is a library for converting binary files
 ### v1.3.4
 
 - Add data type coversion function
+
+### v1.3.5
+
+- Fix if statement

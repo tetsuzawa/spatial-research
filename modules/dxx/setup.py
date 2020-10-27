@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="dxx",
-    version="1.3.4",
+    version="1.3.5",
     description="dxx is a library for converting binary files",
     packages=["dxx"],
     install_requires=["numpy", "SoundFile"],
