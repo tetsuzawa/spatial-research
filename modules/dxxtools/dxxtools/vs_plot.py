@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import signal
 
 import matplotlib.pyplot as plt
-
 import dxx
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 def main():
