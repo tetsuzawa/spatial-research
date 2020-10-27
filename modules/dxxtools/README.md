@@ -11,3 +11,11 @@ dxxtools is a package of useful tools for .DXX
 ### v0.1.1
 
 - Bug fixes
+
+### v0.1.2
+
+- Change structure
+
+### v0.1.3
+
+- Change structure
