@@ -13,7 +13,7 @@ def cosine_windowing(input: str, sampling_freq: float, start_point: int, window_
     window_len = int(window_len * sampling_freq)
     print(f"signal:{input} \nsignal length:{length} ,window length:{window_len}[sample]\n", file=sys.stderr)
 
-    x = dxx.read_DXX_file(input)
+    x = dxx.read(input)
 
     for i in range(start_point, start_point + window_len):
         x[i] = x[i] * np.sin(float(i - start_point) / window_len * np.pi / 2.0)
@@ -21,7 +21,7 @@ def cosine_windowing(input: str, sampling_freq: float, start_point: int, window_
     for i in range(length - window_len, length):
         x[i] = x[i] * np.cos(float(i - (length - window_len)) / window_len * np.pi / 2.0)
 
-    dxx.write_DXX_file(output, x)
+    dxx.write(output, x)
 
 
 if __name__ == "__main__":
