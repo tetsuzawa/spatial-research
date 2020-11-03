@@ -31,10 +31,10 @@ mkdir -p ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER input_files
 
 WHITE_NOISE=input_files/w14s.DSB
 # seq の -w オプションは桁合わせのゼロ埋めを有効化
-# move_width_list=(1 2 3 4 5)
-# move_velocity_list=(2 4 8 16 32)
-move_width_list=`seq -w 1 10`
-move_velocity_list=`seq -w 1 50`
+move_width_list=(1 2 3 4 5)
+move_velocity_list=(2 4 8 16 32)
+#move_width_list=`seq -w 1 10`
+#move_velocity_list=`seq -w 1 50`
 end_angle_list=(0)
 
 NUM_CPU_CORE=4
