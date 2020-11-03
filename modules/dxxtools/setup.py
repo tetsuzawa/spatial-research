@@ -2,8 +2,9 @@ from setuptools import setup
 
 setup(
     name="dxxtools",
-    version="0.1.3",
+    version="0.1.4",
     description="dxxtools is a package of useful tools for .DXX",
+    packages=["dxxtools"],
     install_requires=["dxx", "numpy", "matplotlib"],
     entry_points={
         "console_scripts": [

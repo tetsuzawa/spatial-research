@@ -19,3 +19,7 @@ dxxtools is a package of useful tools for .DXX
 ### v0.1.3
 
 - Change structure
+
+### v0.1.4
+
+- Fix bug
