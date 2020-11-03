@@ -29,9 +29,21 @@ echo "###################################################################"
 (
 for LR in L R; do
   for Angle in `seq 0 50 3550`; do
-    for i in `seq 1 9`; do
-      echo "${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB 0.$((10-i)) ${SUBJECT_DIR}/SLTF/SLTF_$((Angle+i*10/2))_${LR}.DDB"
+    for i in `seq 1 49`; do
+      RATIO=$(echo "scale=5; (50-${i}) / 50" | bc)
+      echo "${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB 0${RATIO} ${SUBJECT_DIR}/SLTF/SLTF_$((Angle+i))_${LR}.DDB"
     done
   done
 done
 ) | xargs -t -L 1 -P ${NUM_CPU_CORE} linear_inpo_hrir_using_ATD
+
+# for LR in L R; do
+#   for Angle in `seq 0 50 3550`; do
+#     for i in `seq 1 49`; do
+#       RATIO=$(echo "scale=5; (50-${i}) / 50" | bc)
+#       RATIO_MISS=$((50-i))
+#       echo "RATIO=0${RATIO}, RATIO_MISS=0.${RATIO_MISS}" >&2
+#       linear_inpo_hrir_using_ATD ${SUBJECT_DIR}/SLTF/SLTF_${Angle}_${LR}.DDB ${SUBJECT_DIR}/SLTF/SLTF_$(((Angle+50)%3600))_${LR}.DDB 0${RATIO} ${SUBJECT_DIR}/SLTF/SLTF_$((Angle+i*10/2))_${LR}.DDB
+#     done
+#   done
+# done
