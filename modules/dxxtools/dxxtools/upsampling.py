@@ -8,7 +8,7 @@ import dxx
 
 
 def main():
-    desc = "upsample .DXX by de"
+    desc = "Upsample .DXX by the specified multiple"
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("input", help="変換元のファイル名")
     parser.add_argument("output", help="変換後のファイル名")
