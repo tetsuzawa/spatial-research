@@ -31,8 +31,8 @@ mkdir -p ${OUT_SUBJECT_DIR}/TS ${OUT_SUBJECT_DIR}/ANSWER input_files
 
 WHITE_NOISE=input_files/w14s.DSB
 # seq の -w オプションは桁合わせのゼロ埋めを有効化
-move_width_list=(1 2 3 4 5)
-move_velocity_list=(2 4 8 16 32)
+move_width_list=(01 02 03 04 05)
+move_velocity_list=(02 04 08 16 32)
 #move_width_list=`seq -w 1 10`
 #move_velocity_list=`seq -w 1 50`
 end_angle_list=(0)
@@ -66,6 +66,8 @@ echo "###################################################################"
 echo "      Adjusting max sound pressure ...                             "
 echo "###################################################################"
 echo
+
+echo ${OUT_SUBJECT_DIR}
 
 printf "" >| input_files/input_file_move_judge.dat
 for move_width in ${move_width_list[@]}; do
