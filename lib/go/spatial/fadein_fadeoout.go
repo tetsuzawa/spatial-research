@@ -2,33 +2,45 @@ package spatial
 
 import (
 	"fmt"
-	"github.com/mjibson/go-dsp/dsputils"
-	"github.com/mjibson/go-dsp/fft"
-	"github.com/tetsuzawa/go-dxx/dxx"
 	"log"
 	"math"
 	"os"
+
+	"github.com/mjibson/go-dsp/dsputils"
+	"github.com/mjibson/go-dsp/fft"
+	"github.com/tetsuzawa/go-dxx/dxx"
 )
 
-var (
-	subject      = ""
-	inName       = ""
-	moveWidth    = 10
+//var (
+//subject      = ""
+//inName       = ""
+//moveWidth    = 10
+//repeatTimes  = 1
+//moveVelocity = 10
+//moveTime     = int(moveWidth * 1000.0 / moveVelocity) // [deg]/[deg/s] * 1000 = [ms]
+//endAngle     = 45
+//outDir       = ""
+//moveAngle    = moveWidth*repeatTimes + 1
+//samplingFreq = 48 //[kHz]
+//)
+
+const (
 	repeatTimes  = 1
-	moveVelocity = 10
-	moveTime     = int(moveWidth * 1000.0 / moveVelocity) // [deg]/[deg/s] * 1000 = [ms]
-	endAngle     = 45
-	outDir       = ""
-	moveAngle    = moveWidth*repeatTimes + 1
-	samplingFreq = 48 //[kHz]
+	samplingFreq = 48 // [kHz]
 )
 
-func FadeinFadeout() error {
-	// 1度動くのに必要な時間　速度の逆数
+func FadeinFadeout(subject, soundName string, moveWidth, moveVelocity, endAngle int, outDir string) error {
+
+	// 移動時間 [ms]
+	var moveTime float64 = float64(moveWidth) * 1000.0 / float64(moveVelocity)
+	// 移動角度
+	var moveAngle int = moveWidth*repeatTimes + 1
+
+	// 1度動くのに必要なサンプル数
 	// [ms]*[kHz] / [deg] = [sample/deg]
-	var dwellingTime float64 = float64(moveTime*samplingFreq) / float64(moveWidth*repeatTimes*2+1)
-	var durationTime int = int(dwellingTime * 63 / 64)
-	var overlapTime int = int(dwellingTime * 63 / 64)
+	var dwellingSamples int = int(moveTime*samplingFreq/float64(moveWidth)*float64(repeatTimes)*2 + 1)
+	var durationSamples int = int(float64(dwellingSamples) * 63.0 / 64.0)
+	var overlapSamples int = int(float64(dwellingSamples) * 63.0 / 64.0)
 
 	// Fourier Series Window Coefficient
 	a0 := (1 + math.Sqrt(2)) / 4
@@ -37,23 +49,23 @@ func FadeinFadeout() error {
 	a3 := 0.25 - 0.25*math.Sqrt((5-2*math.Sqrt(2))/2)
 
 	// Fourier series window
-	fadeinFilt := make([]float64, overlapTime)
-	fadeoutFilt := make([]float64, overlapTime)
-	for i := 0; i < overlapTime; i++ {
-		fadeinFilt[i] = a0 - a1*math.Cos(math.Pi/float64(overlapTime)*float64(i)) + a2*math.Cos(2.0*math.Pi/float64(overlapTime)*float64(i)) - a3*math.Cos(3.0*math.Pi/float64(overlapTime)*float64(i))
-		fadeoutFilt[i] = a0 + a1*math.Cos(math.Pi/float64(overlapTime)*float64(i)) + a2*math.Cos(2.0*math.Pi/float64(overlapTime)*float64(i)) + a3*math.Cos(3.0*math.Pi/float64(overlapTime)*float64(i))
+	fadeinFilt := make([]float64, overlapSamples)
+	fadeoutFilt := make([]float64, overlapSamples)
+	for i := 0; i < overlapSamples; i++ {
+		fadeinFilt[i] = a0 - a1*math.Cos(math.Pi/float64(overlapSamples)*float64(i)) + a2*math.Cos(2.0*math.Pi/float64(overlapSamples)*float64(i)) - a3*math.Cos(3.0*math.Pi/float64(overlapSamples)*float64(i))
+		fadeoutFilt[i] = a0 + a1*math.Cos(math.Pi/float64(overlapSamples)*float64(i)) + a2*math.Cos(2.0*math.Pi/float64(overlapSamples)*float64(i)) + a3*math.Cos(3.0*math.Pi/float64(overlapSamples)*float64(i))
 	}
 
 	// 音データの読み込み
-	sound, err := dxx.ReadFromFile(inName)
+	sound, err := dxx.ReadFromFile(soundName)
 	if err != nil {
 		return err
 	}
 
 	for _, direction := range []string{"c", "cc"} {
 		for _, LR := range []string{"L", "R"} {
-			moveOut := make([]float64, overlapTime)
-			usedAngle := make([]int, 0)
+			moveOut := make([]float64, overlapSamples)
+			usedAngles := make([]int, 0)
 
 			for angle := 0; angle < (moveAngle*2 - 1); angle++ {
 				// ノコギリ波の生成
@@ -71,39 +83,39 @@ func FadeinFadeout() error {
 				}
 
 				// SLTFの読み込み
-				SLTFName := fmt.Sprintf("subject/SLTF/SLTF_%d_%s.DDB", (endAngle+dataAngle)%3600, LR)
+				SLTFName := fmt.Sprintf("%s/SLTF/SLTF_%d_%s.DDB", subject, (endAngle+dataAngle)%3600, LR)
 				SLTF, err := dxx.ReadFromFile(SLTFName)
 				if err != nil {
 					return err
 				}
-				usedAngle = append(usedAngle, (endAngle+dataAngle)%3600)
+				usedAngles = append(usedAngles, (endAngle+dataAngle)%3600)
 
 				// Fadein-Fadeout
 				// 音データと伝達関数の畳込み
-				cutSound := sound[angle*(durationTime+overlapTime) : durationTime*2+angle*(durationTime+overlapTime)+len(SLTF)*3+1]
+				cutSound := sound[angle*(durationSamples+overlapSamples) : durationSamples*2+angle*(durationSamples+overlapSamples)+len(SLTF)*3+1]
 				soundSLTF := ToFloat64(LinearConvolution(dsputils.ToComplex(cutSound), dsputils.ToComplex(SLTF)))
 				// 無音区間の切り出し
 				soundSLTF = soundSLTF[len(SLTF)*2 : len(soundSLTF)-len(SLTF)*2]
 				// 前の角度のfadeout部と現在の角度のfadein部の加算
-				fadein := make([]float64, overlapTime)
+				fadein := make([]float64, overlapSamples)
 				for i := range fadein {
-					fadein[i] = soundSLTF[len(soundSLTF)-overlapTime+i] * fadeoutFilt[i]
-					moveOut[(durationTime+overlapTime)*angle+i] += fadein[i]
+					fadein[i] = soundSLTF[len(soundSLTF)-overlapSamples+i] * fadeoutFilt[i]
+					moveOut[(durationSamples+overlapSamples)*angle+i] += fadein[i]
 				}
 
 				// 持続時間
-				moveOut = append(moveOut, soundSLTF[overlapTime:len(soundSLTF)-overlapTime]...)
+				moveOut = append(moveOut, soundSLTF[overlapSamples:len(soundSLTF)-overlapSamples]...)
 
 				// fadeout
-				fadeout := make([]float64, overlapTime)
+				fadeout := make([]float64, overlapSamples)
 				for i := range fadein {
-					fadeout[i] = soundSLTF[len(soundSLTF)-overlapTime+i] * fadeoutFilt[i]
+					fadeout[i] = soundSLTF[len(soundSLTF)-overlapSamples+i] * fadeoutFilt[i]
 				}
 				moveOut = append(moveOut, fadeout...)
 			}
 
 			// 先頭のFadein部をカット
-			out := moveOut[overlapTime:]
+			out := moveOut[overlapSamples:]
 
 			// DDBへ出力
 			outName := fmt.Sprintf("%s/move_judge_w%03d_mt%03d_%s_%d_%s.DDB", outDir, moveWidth, moveVelocity, direction, endAngle, LR)
@@ -114,7 +126,7 @@ func FadeinFadeout() error {
 			if err != nil {
 				return err
 			}
-			_, err := fmt.Fprintf(os.Stderr, "used angle:%v\n", usedAngle)
+			_, err := fmt.Fprintf(os.Stderr, "used angle:%v\n", usedAngles)
 			if err != nil {
 				return err
 			}
