@@ -13,6 +13,7 @@ import numpy as np
 
 exts = [".DSA", ".DFA", ".DDA", ".DSB", ".DFB", ".DDB"]
 dtypes = [np.int16, np.float32, np.float64, np.int16, np.float32, np.float64]
+dtype_byte_width = [2, 4, 8, 2, 4, 8]
 _format_specifiers = ["%d", "%e", "%e"]
 
 
@@ -38,8 +39,9 @@ def len_file(filename: str) -> int:
         import dxx
         num_sample = dxx.len_file("example.DSB")
     """
-    data = read(filename)
-    return len(data)
+    index = _style(filename)
+    byte_width = dtype_byte_width[index]
+    return int(os.path.getsize(filename) / byte_width)
 
 
 def read(filename: str) -> np.ndarray:
