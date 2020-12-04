@@ -36,8 +36,8 @@ def main():
     # --------------- 引数の処理 -------------- #
 
 
-    data_L = dxx.read_DXX_file(file_L)
-    data_R = dxx.read_DXX_file(file_R)
+    data_L = dxx.read(file_L)
+    data_R = dxx.read(file_R)
     print("Lの信号長:", len(data_L))
     print("Rの信号長:", len(data_R))
 
