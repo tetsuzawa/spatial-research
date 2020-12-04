@@ -53,7 +53,7 @@ for move_width in ${move_width_list[@]}; do
     echo "${OUT_SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/end_angle_${end_angle}/TS"
   done
 done
-) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 continuous_move_judge_dv.py
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} fadein-fadeout
 #---------------------------------------------------------------------------------------#
 
 ##---------------------------------最大音圧の調整---------------------------------#

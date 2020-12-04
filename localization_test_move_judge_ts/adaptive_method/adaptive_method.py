@@ -144,6 +144,10 @@ def main():
     # --------------- 心理測定法の決定 --------------- #
     # PEST法のインスタンス生成
     destination_threshold = 0.75
+    # memo min_dxをこのまま指定する方式だと、init_dxが即した幅にならない(0 2 100)だとlen(test_sounds_dict)は50だから32になるが、
+    # 変化分は32のまま。min_dxをかけたときの影響を調査しなきゃいけない。lenにおさまるのかとか
+    # もしくはdxをindex形式に合わせる
+    # この場合mindxが3とか5の場合でも合わせられるかも
     pest = psy.PEST(init_dx=init_dx, min_dx=min_dx, Pt=destination_threshold)
     # --------------- 心理測定法の決定 --------------- #
 
