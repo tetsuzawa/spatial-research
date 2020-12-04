@@ -51,3 +51,11 @@ dxx is a library for converting binary files
 ### v1.3.6
 
 - Improve some functinos
+
+## Release commands
+
+```bash
+python setup.py sdist
+python setup.py bdist_wheel
+twine upload dist/dxx-<VERSION>*
+```
