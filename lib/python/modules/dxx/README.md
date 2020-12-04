@@ -47,3 +47,7 @@ dxx is a library for converting binary files
 ### v1.3.5
 
 - Fix if statement
+
+### v1.3.6
+
+- Improve some functinos
