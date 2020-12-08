@@ -35,7 +35,6 @@ def main():
     move_time = int(movement_width * 1000 / move_velocity)  # 終了角度
     end_angle = int(args[5])
     outdir = args[6]  # 出力先
-    movement_angle = movement_width  # 移動角度
     sampling_freq = 48  # サンプリング周波数[kHz]
 
     dwell_time = move_time * sampling_freq / movement_width   # 1度動くのに必要な時間　速度の逆数
@@ -65,7 +64,7 @@ def main():
             move_out = [0] * overlap_time
             angle_list = []
 
-            for angle in range(movement_angle+1):
+            for angle in range(movement_width):
                 data_angle = angle % (movement_width * 2)
                 if data_angle > movement_width:
                     data_angle = movement_width*2 - data_angle
