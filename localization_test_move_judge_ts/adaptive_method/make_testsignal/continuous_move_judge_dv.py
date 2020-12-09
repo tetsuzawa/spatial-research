@@ -82,16 +82,9 @@ def main():
 
                 # Fadein-Fadeout #####################################################################################
                 # 音データと伝達関数の畳込み
-                # range_l = angle * (duration_time + overlap_time)
-                # range_r = duration_time + overlap_time * 2 + (
-                #         duration_time + overlap_time) * angle + len(SLTF) * 3 + 1
-                # cut_sound = sound[angle * (duration_time + overlap_time):duration_time + overlap_time * 2 + (
-                #         duration_time + overlap_time) * angle + len(SLTF) * 3 + 1]
                 sound_SLTF = np.convolve(
                     sound[angle * (duration_time + overlap_time):duration_time + overlap_time * 2 + (
                         duration_time + overlap_time) * angle + len(SLTF) * 3 + 1], SLTF)
-                # no_sound_l = len(SLTF) * 2
-                # no_sound_r = len(sound_SLTF) - len(SLTF) * 2
                 sound_SLTF = sound_SLTF[len(
                     SLTF) * 2:len(sound_SLTF) - len(SLTF) * 2]  # 無音区間の切り出し
 

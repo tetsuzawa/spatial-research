@@ -30,7 +30,8 @@ WHITE_NOISE=input_files/w35s.DSB
 # seq の -w オプションは桁合わせのゼロ埋めを有効化
 # move_width_list=(1 2 3 4 5)
 # move_velocity_list=(2 4 8 16 32)
-move_width_list=`seq -w 10 10 300`
+#move_width_list=`seq -w 10 10 300`
+move_width_list=`seq -w 10 10 500`
 move_velocity_list=(020 040 080 160 320)
 end_angle=450
 
