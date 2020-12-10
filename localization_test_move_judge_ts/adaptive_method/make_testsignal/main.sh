@@ -29,10 +29,10 @@ echo "Running liner_interpolation.sh ..."
 bash linear_interpolation.sh ${OUT_SUBJECT_DIR} # SLTFの線形補間
 #echo "Running make_testsignal_move_judge0_msdv.sh ..."
 #bash make_testsignal_move_judge0_msdv.sh ${SUBJECT_DIR} ${OUT_SUBJECT_DIR} # 移動音の生成
-echo "Running make_testsignal_move_judge45_msdv.sh ..."
-bash make_testsignal_move_judge45_msdv.sh ${SUBJECT_DIR} ${OUT_SUBJECT_DIR} # 移動音の生成
-#echo "Running make_testsignal_move_judge90_msdv.sh ..."
-#bash make_testsignal_move_judge90_msdv.sh ${SUBJECT_DIR} ${OUT_SUBJECT_DIR} # 移動音の生成
+echo "Running make_testsignal_move_judge450_msdv.sh ..."
+bash make_testsignal_move_judge450_msdv.sh ${SUBJECT_DIR} ${OUT_SUBJECT_DIR} # 移動音の生成
+#echo "Running make_testsignal_move_judge900_msdv.sh ..."
+#bash make_testsignal_move_judge900_msdv.sh ${SUBJECT_DIR} ${OUT_SUBJECT_DIR} # 移動音の生成
 
 echo ""
 echo "$((SECONDS/60))min $((SECONDS%60))sec elapsed"

@@ -19,7 +19,7 @@ set -Ceu
 # 引数が間違っている場合終了
 if [ $# -ne 2 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: bash make_testsignal_move_judge45_msdv.sh SUBJECT_DIR OUT_SUBJECT_DIR\e[m \n\n"
+  printf " usage: bash make_testsignal_move_judge450_msdv.sh SUBJECT_DIR OUT_SUBJECT_DIR\e[m \n\n"
   exit 1
 fi
 
@@ -94,7 +94,7 @@ for move_width in ${move_width_list[@]}; do
     done
   done
 done
-) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 cosine_windowing.py
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} cosine_windowing
 # -----------------------------------------コサイン窓----------------------------------------------#
 
 # ---------------------------------------dv------------------------------------------------------#
