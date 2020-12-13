@@ -16,6 +16,7 @@
 import sys
 
 import numpy as np
+from scipy import signal
 
 
 def main():
@@ -82,7 +83,7 @@ def main():
 
                 # Fadein-Fadeout #####################################################################################
                 # 音データと伝達関数の畳込み
-                sound_SLTF = np.convolve(
+                sound_SLTF = signal.convolve(
                     sound[angle * (duration_time + overlap_time):duration_time + overlap_time * 2 + (
                         duration_time + overlap_time) * angle + len(SLTF) * 3 + 1], SLTF)
                 sound_SLTF = sound_SLTF[len(
