@@ -9,13 +9,14 @@
 # ##################################################
 
 import sys
-
 import glob
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-import psychometrics as psy
 import re
+
+import numpy as np
+import matplotlib.pyplot as plt
+import psychometrics as psy
+
 from subprocess import Popen
 
 usage = "usage: python adaptive_method.py subject_dir stimulation_constant_value start_position test_number"
