@@ -202,36 +202,37 @@ def main():
     # 初期刺激レベル
     # X = int(max_stimulation_level)
     # 刺激の変化を記録
-    X_list = []
-    result_list = []
+    X_list = [290, 130, 60, 30, 20, 10, 10, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+    result_list = ['Correct', 'Correct', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Incorrect', 'Correct', 'Correct', 'Incorrect', 'Correct', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Correct', 'Correct', 'Incorrect', 'Incorrect', 'Incorrect', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Correct', 'Incorrect', 'Incorrect', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Incorrect', 'Correct', 'Incorrect', 'Correct', 'Incorrect', 'Correct', 'Incorrect', 'Incorrect', 'Incorrect', 'Incorrect', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Incorrect', 'Incorrect', 'Incorrect', 'Incorrect', 'Correct', 'Incorrect', 'Correct', 'Correct', 'Correct', 'Correct', 'Incorrect', 'Incorrect', 'Correct', 'Incorrect', 'Incorrect', 'Correct', 'Incorrect', 'Incorrect', 'Incorrect', 'Incorrect', 'Correct']
     # 試験開始
     print("試験開始")
     # while True:
-    for i in range(1, T_end + 1):
+    for i in range(1, T_end):
+        # for i in range(1, T_end + 1):
         next_stim = q.next_stim
         print("next_stim:", next_stim)
         X = next_stim["intensity"]
-        X_list.append(X)
+        # X_list.append(X)
         # 試行回数読み上げ
-        subprocess("say " + str(T))
+        # subprocess("say " + str(T))
 
         # c,ccをランダムに選択 ([0,1]から一つ選ぶ。要素は一つでも配列で返ってくるので最初の要素を取得)
         rotation_index = np.random.choice([0, 1], 1)[0]
         test_sound = test_sounds_dict[X][rotation_index]
 
         # 試験音再生
-        subprocess("2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
-        # print("2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
+        # subprocess("2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
+        print("2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
         # 回答の入力
-        answer = input()  # 標準入力
+        # answer = input()  # 標準入力
 
-        if answer == "1":
-            answer_rotation = "c"
-        elif answer == "0":
-            answer_rotation = "cc"
-        else:
+        # if answer == "1":
+        #     answer_rotation = "c"
+        # elif answer == "0":
+        #     answer_rotation = "cc"
+        # else:
             # 回答の入力が有効でなければもう一度再生
-            continue
+            # continue
 
         # 試行回数をカウント
         T += 1
@@ -248,24 +249,26 @@ def main():
         # --------------- 試験音のパラメータ抽出 --------------- #
 
         # 正誤判定
-        is_correct = answer_rotation == rotation_direction
-        result = "Correct" if is_correct else "Incorrect"
-        result_list.append(result)
+        # is_correct = answer_rotation == rotation_direction
+        # result = "Correct" if is_correct else "Incorrect"
+        # result_list.append(result)
+        result = result_list[i - 1]
+        print("result:", result)
 
         # 途中経過の出力
 
         print(f"\n刺激レベルX: {X}")
         print(f"\n刺激レベルの推定閾値 mean: {q.param_estimate['mean']}")
-        print(f"正誤: {is_correct}\n")
+        # print(f"正誤: {is_correct}\n")
 
         # --------------- 結果の記録 --------------- #
-        with open(
-                script_dir + subject_dir + "/end_angle_" + start_pos + "/ANSWER/answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + ".csv",
-                "a") as answer_file:
-
-            is_correct_str = "1" if is_correct else "0"
-            answer_file.write(test_sounds_dict[X][rotation_index] + "," + move_width + "," + move_time
-                              + "," + start_pos + "," + rotation_direction + "," + answer_rotation + "," + is_correct_str + "\n")
+        # with open(
+        #         script_dir + subject_dir + "/end_angle_" + start_pos + "/ANSWER/answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + ".csv",
+        #         "a") as answer_file:
+        #
+        #     is_correct_str = "1" if is_correct else "0"
+        #     answer_file.write(test_sounds_dict[X][rotation_index] + "," + move_width + "," + move_time
+        #                       + "," + start_pos + "," + rotation_direction + "," + answer_rotation + "," + is_correct_str + "\n")
         # --------------- 結果の記録 --------------- #
 
         # 刺激レベルの更新
