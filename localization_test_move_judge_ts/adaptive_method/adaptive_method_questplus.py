@@ -149,7 +149,8 @@ def main():
 
     # Stimulus domain.
     # intensities = np.arange(start=-3.5, stop=-0.5 + 0.25, step=0.25)
-    orientation = np.array(list(test_sounds_dict.keys())) / 10.0
+    # orientation = np.array(list(test_sounds_dict.keys())) / 10.0
+    orientation = np.arange(1,30, 1, dtype=np.float)
 
     stim_domain = dict(intensity=orientation)
 
@@ -172,11 +173,11 @@ def main():
                         lower_asymptote=lower_asymptote,
                         lapse_rate=lapse_rate)
 
-    mean_fitted = scipy.stats.norm.pdf(thresholds, loc=17.84, scale=8.38)
-    mean_fitted /= mean_fitted.sum()
-    sd_fitted = scipy.stats.norm.pdf(sd, loc=10.83, scale=2.78)
-    sd_fitted /= sd_fitted.sum()
-    prior_param_domain = dict(mean=mean_fitted, sd=sd_fitted)
+    # mean_fitted = scipy.stats.norm.pdf(thresholds, loc=17.84, scale=8.38)
+    # mean_fitted /= mean_fitted.sum()
+    # sd_fitted = scipy.stats.norm.pdf(sd, loc=10.83, scale=2.78)
+    # sd_fitted /= sd_fitted.sum()
+    # prior_param_domain = dict(mean=mean_fitted, sd=sd_fitted)
 
     # Outcome (response) domain.
     responses = ["Correct", "Incorrect"]
@@ -197,7 +198,7 @@ def main():
                      outcome_domain=outcome_domain,
                      stim_selection_method=stim_selection_method,
                      param_estimation_method=param_estimation_method,
-                     prior=prior_param_domain,
+                     # prior=prior_param_domain,
                      )
     # --------------- 心理測定法の決定 --------------- #
 
@@ -211,18 +212,24 @@ def main():
     # 刺激の変化を記録
     X_list = []
     result_list = []
+    entropy_list = []
     # 試験開始
     print("試験開始")
 
-    fig, axs = plt.subplots(1, 3)
+    # fig, axs = plt.subplots(1, 4)
 
     # while True:
     for i in range(1, T_end + 1):
         next_stim = q.next_stim
         print("next_stim:", next_stim)
+
+        plt.plot(orientation, q.EH)
+        plt.show()
+
         X = next_stim["intensity"]
         X = int(X * 10)
         X_list.append(X)
+        entropy_list.append(q.entropy)
         # 試行回数読み上げ
         subprocess("say " + str(T))
 
@@ -231,8 +238,8 @@ def main():
         test_sound = test_sounds_dict[X][rotation_index]
 
         # 試験音再生
-        subprocess("2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
-        # print("2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
+        subprocess("/Users/tetsu/local/bin/2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
+        # print("/Users/tetsu/local/bin/2chplay" + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
         # 回答の入力
         answer = input("\n回答 -> ")  # 標準入力
 
@@ -282,6 +289,7 @@ def main():
         q.update(stim=next_stim, outcome=dict(response=result))
 
         print(f"\n刺激レベルの推定閾値 mean: {q.param_estimate['mean']}, sd:{q.param_estimate['sd']}")
+        print(f"entropy: {q.entropy}")
 
         # 試験終了判定
         # if pest.has_ended():
@@ -313,6 +321,10 @@ def main():
         axs[2].plot(pf_most_probable, color="red", alpha=T / T_end, label=T)
         axs[2].set_xlabel("psychometric function")
         axs[2].set_ylabel("probability")
+
+        axs[3].plot(orientation, q.EH, color="yellow", alpha=T / T_end, label=T)
+        axs[3].set_xlabel("intensity")
+        axs[3].set_ylabel("EH")
         # plt.legend()
         # plt.show()
 
@@ -320,7 +332,7 @@ def main():
     plt.legend()
     plt.show()
 
-    fig, axs = plt.subplots(1, 3)
+    fig, axs = plt.subplots(1, 4)
     axs[0].plot(thresholds, q.marginal_posterior["mean"], color="blue")
     axs[0].set_xlabel("mean")
     axs[0].set_ylabel("probability")
@@ -342,6 +354,10 @@ def main():
     axs[2].plot(pf_most_probable, color="red")
     axs[2].set_xlabel("psychometric function")
     axs[2].set_ylabel("probability")
+
+    axs[3].plot(orientation, q.EH, color="yellow", alpha=T / T_end, label=T)
+    axs[3].set_xlabel("intensity")
+    axs[3].set_ylabel("EH")
     plt.show()
 
     for k, v in q.marginal_posterior.items():
@@ -362,6 +378,13 @@ def main():
     plt.xlabel("Numbers of trials T")
     plt.ylabel("Stimulation level X")
     plt.title("Path of stimulation level")
+    plt.show()
+
+    # エントロピーの軌跡
+    plt.plot(list(range(1, len(X_list) + 1)), entropy_list, "o-")
+    plt.xlabel("Numbers of trials T")
+    plt.ylabel("Entropy")
+    plt.title("Path of Entoropy")
     plt.show()
 
     print(X_list)
