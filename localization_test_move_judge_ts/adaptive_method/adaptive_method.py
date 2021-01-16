@@ -12,7 +12,7 @@ import sys
 import glob
 import os
 import re
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -57,8 +57,56 @@ def glob_test_sounds(target_dir: str, start_pos: str, stimulation_const_val: str
     print(f"試験音を{len(test_sounds)}個読み込みました", file=sys.stderr)
 
     # 取得した試験音のファイル名からtarget_dir部分を削除
-    # test_sounds = [test_sound.replace(target_dir+"/", "") for test_sound in test_sounds]
+    test_sounds = [test_sound.replace(target_dir, "") for test_sound in test_sounds]
     return test_sounds
+
+
+def min_max_stimulation_level(test_sounds: np.ndarray, stimulation_var: str) -> (int, int):
+    min_parameter = test_sounds[0, 0].replace("move_judge_", "").replace(".DSB", "")
+    max_parameter = test_sounds[-1, 0].replace("move_judge_", "").replace(".DSB", "")
+    min_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", min_parameter)
+    max_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", max_parameter)
+    if stimulation_var == "w":
+        min_stimulation_level = min_parameter_divide.group(1).replace("w", "")
+        max_stimulation_level = max_parameter_divide.group(1).replace("w", "")
+    else:
+        min_stimulation_level = min_parameter_divide.group(2).replace("mt", "")
+        max_stimulation_level = max_parameter_divide.group(2).replace("mt", "")
+    return min_stimulation_level, max_stimulation_level
+
+
+def check_stimulation_spacing(test_sounds: np.ndarray, stimulation_var: str) -> int:
+    min_parameter = test_sounds[0, 0].replace("move_judge_", "").replace(".DSB", "")
+    one_level_upper_parameter = test_sounds[1, 0].replace("move_judge_", "").replace(".DSB", "")
+    min_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", min_parameter)
+    one_level_upper_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", one_level_upper_parameter)
+    if stimulation_var == "w":
+        min_stimulation_level = min_parameter_divide.group(1).replace("w", "")
+        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(1).replace("w", "")
+    else:
+        min_stimulation_level = min_parameter_divide.group(2).replace("mt", "")
+        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(2).replace("mt", "")
+    stimulation_spacing = int(one_level_upper_stimulation_level) - int(min_stimulation_level)
+    return stimulation_spacing
+
+
+def make_test_sounds_dict(test_sounds: np.ndarray, stimulation_var) -> Dict[int, str]:
+    min_stimulation_level, max_stimulation_level = min_max_stimulation_level(test_sounds, stimulation_var)
+    test_sounds_dict = {}
+    for test_sound_both in test_sounds:
+        # 時計回りの試験音だけ読み込んで刺激レベルを確認
+        parameter = test_sound_both[0].replace("move_judge_", "").replace(".DSB", "")
+        parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
+        if stimulation_var == "w":
+            stimulation_level = parameter_divide.group(1).replace("w", "")
+        else:
+            stimulation_level = parameter_divide.group(2).replace("mt", "")
+            # mtの場合、数字が大きいほど刺激レベルが小さくなるので、反転させる
+            stimulation_level = str(
+                int(max_stimulation_level) + int(min_stimulation_level) - int(stimulation_level))
+        # 刺激レベルに対する[c,cc]の試験音の配列を登録
+        test_sounds_dict[int(stimulation_level)] = test_sound_both
+    return test_sounds_dict
 
 
 def main():
@@ -88,108 +136,50 @@ def main():
         print_usage()
         sys.exit(1)
 
-    # --------------- 試験音の読み込み -------------- #
     TS_dir = subject_dir + "/end_angle_" + start_pos + "/TS/"
     ANSWER_dir = subject_dir + "/end_angle_" + start_pos + "/ANSWER/"
 
+    # 試験音の読み込み
     test_sounds = glob_test_sounds(TS_dir, start_pos, stimulation_const_val, stimulation_var)
 
     # 取得した試験を[c,cc]の2列に並び替え
     test_sounds = np.array(test_sounds).reshape(-1, 2)
 
-    # --------------- 試験音の読み込み -------------- #
+    # 試験音の最小刺激幅を確認
+    stimulation_spacing = check_stimulation_spacing(test_sounds, stimulation_var)
 
-    # --------------- 試験音の刺激幅を確認 -------------- #
-    min_parameter = test_sounds[0, 0].replace(TS_dir + "move_judge_", "").replace(".DSB", "")
-    max_parameter = test_sounds[-1, 0].replace(TS_dir + "move_judge_", "").replace(".DSB", "")
-    min_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", min_parameter)
-    max_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", max_parameter)
-    if stimulation_var == "w":
-        min_stimulation_level = min_parameter_divide.group(1).replace("w", "")
-        max_stimulation_level = max_parameter_divide.group(1).replace("w", "")
-    else:
-        min_stimulation_level = min_parameter_divide.group(2).replace("mt", "")
-        max_stimulation_level = max_parameter_divide.group(2).replace("mt", "")
-    # --------------- 試験音の刺激幅を確認 -------------- #
-
-    # --------------- 試験音の最小刺激幅を確認 -------------- #
-    one_level_upper_parameter = test_sounds[1, 0].replace(TS_dir + "move_judge_", "").replace(".DSB", "")
-    one_level_upper_parameter_divide = re.search(
-        "(.*)_(.*)_(.*)_(.*)", one_level_upper_parameter)
-    if stimulation_var == "w":
-        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(
-            1).replace("w", "")
-    else:
-        one_level_upper_stimulation_level = one_level_upper_parameter_divide.group(
-            2).replace("mt", "")
-    min_dx = int(one_level_upper_stimulation_level) - int(min_stimulation_level)
-    # --------------- 試験音の最小刺激幅を確認 -------------- #
-
-    # --------------- 刺激レベルに対する試験音の辞書登録 -------------- #
-    test_sounds_dict = {}
-    for test_sound_both in test_sounds:
-        # 時計回りの試験音だけ読み込んで刺激レベルを確認
-        parameter = test_sound_both[0].replace(TS_dir + "move_judge_", "").replace(".DSB", "")
-        parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
-        if stimulation_var == "w":
-            stimulation_level = parameter_divide.group(1).replace("w", "")
-        else:
-            stimulation_level = parameter_divide.group(2).replace("mt", "")
-            # mtの場合、数字が大きいほど刺激レベルが小さくなるので、反転させる
-            stimulation_level = str(
-                int(max_stimulation_level) + int(min_stimulation_level) - int(stimulation_level))
-        # 刺激レベルに対する[c,cc]の試験音の配列を登録
-        test_sounds_dict[int(stimulation_level)] = test_sound_both
-    # --------------- 刺激レベルに対する試験音の辞書登録 -------------- #
-
-    # --------------- 試験音の初期刺激幅を決定 -------------- #
-    # 2のべき乗にしている理由はPEST法のアルゴリズムの制約によるもの
-    # 詳しくは津村尚志 "最近の聴覚心理実験における新しい測定法"（1984)を参照
-    # if 2 ** 4 < len(test_sounds_dict):
-    #     init_dx_coef = 2 ** 4
-    # else:
-    #     for i in range(1, 5):
-    #         if 2 ** i > len(test_sounds_dict):
-    #             init_dx_coef = 2 ** (i - 1)
-    #             break
-    # init_dx = min_dx * init_dx_coef
-    # print(f"initdx:{init_dx}")
-    # --------------- 試験音の初期刺激幅を決定 -------------- #
+    # 刺激レベルに対する試験音の辞書作成
+    test_sounds_dict = make_test_sounds_dict(test_sounds, stimulation_var)
 
     # --------------- 心理測定法の決定 --------------- #
-    # destination_threshold = 0.75
 
-    # Stimulus domain.
-    # intensities = np.arange(start=-3.5, stop=-0.5 + 0.25, step=0.25)
+    # 刺激ドメイン (1[deg]単位に合わせるために10で割る)
     intensities = np.array(list(test_sounds_dict.keys())) / 10.0
-
     stim_domain = dict(intensity=intensities)
 
-    # Parameter domain.
+    # パラメータドメイン
+    # TODO どうやって平均値の範囲を決めるか
     # mean = orientation.copy()
     mean = np.arange(1, 30, 1)
-    # beta
-    # slope = 3.5
-    # sd = 8
+    # TODO どうやって標準偏差の範囲を決めるか
     sd = np.arange(0.5, 15, 0.5)
     # bias (if 2-AFC then 1/2)
     lower_asymptote = 1 / 2
-    # lapse_rate = 1 / 2
     # rate of mistake
     lapse_rate = np.arange(0, 0.05, 0.01)
-    # lower_asymptote = np.arange(0, 0.05, 0.01)
-
     param_domain = dict(mean=mean,
                         sd=sd,
                         lower_asymptote=lower_asymptote,
                         lapse_rate=lapse_rate)
 
+    # 事前確率密度ドメイン
     # mean_fitted = scipy.stats.norm.pdf(mean, loc=17.84, scale=8.38)
     # mean_fitted /= mean_fitted.sum()
     # sd_fitted = scipy.stats.norm.pdf(sd, loc=10.83, scale=2.78)
     # sd_fitted /= sd_fitted.sum()
     # prior_param_domain = dict(mean=mean_fitted, sd=sd_fitted)
 
+    # 結果ドメイン
     # Outcome (response) domain.
     responses = ["Correct", "Incorrect"]
     outcome_domain = dict(response=responses)
@@ -233,7 +223,7 @@ def main():
         next_stim = q.next_stim
         print("next_stim:", next_stim)
         eps_range = int(len(intensities) * 0.1)  # 10％
-        epss = list(range(-eps_range * min_dx, (eps_range + 1) * min_dx, min_dx))
+        epss = list(range(-eps_range * stimulation_spacing, (eps_range + 1) * stimulation_spacing, stimulation_spacing))
         print("eps_range", eps_range)
         print("epss", epss)
         eps = np.random.choice(epss, 1)[0]
@@ -254,7 +244,7 @@ def main():
         test_sound = test_sounds_dict[X][rotation_index]
 
         # 試験音再生
-        subprocess("/Users/tetsu/local/bin/2chplay " + test_sound)
+        subprocess("/Users/tetsu/local/bin/2chplay " + TS_dir + test_sound)
         # print("/Users/tetsu/local/bin/2chplay" + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
         # 回答の入力
         answer = input("\n回答 -> ")  # 標準入力
@@ -272,7 +262,7 @@ def main():
 
         # --------------- 試験音のパラメータ抽出 --------------- #
         # プログラム的な無駄があるが、先行研究の形式に合わせてある
-        parameter = test_sounds_dict[X][rotation_index].replace(TS_dir+"move_judge_", "").replace(".DSB", "")
+        parameter = test_sounds_dict[X][rotation_index].replace("move_judge_", "").replace(".DSB", "")
         parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
         move_width = parameter_divide.group(1).replace("w", "")
         move_time = parameter_divide.group(2).replace("mt", "")
@@ -291,7 +281,9 @@ def main():
         print(f"正誤: {is_correct}\n")
 
         # --------------- 結果の記録 --------------- #
-        with open(ANSWER_dir + "answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + ".csv", "a") as answer_file:
+        with open(
+                ANSWER_dir + "answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + ".csv",
+                "a") as answer_file:
 
             is_correct_str = "1" if is_correct else "0"
             answer_file.write(test_sounds_dict[X][rotation_index] + "," + move_width + "," + move_time
