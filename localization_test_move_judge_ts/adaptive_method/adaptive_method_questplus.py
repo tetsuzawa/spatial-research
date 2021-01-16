@@ -18,6 +18,10 @@ import matplotlib.pyplot as plt
 import scipy.stats
 import psychometrics as psy
 import questplus as qp
+import arviz as az
+
+az.rcParams["stats.hdi_prob"] = 0.95
+import xarray as xr
 
 from subprocess import Popen
 
@@ -155,11 +159,11 @@ def main():
 
     # Parameter domain.
     # mean = orientation.copy()
-    mean = np.arange(1, 8, 1)
+    mean = np.arange(1, 30, 1)
     # beta
     # slope = 3.5
     # sd = 8
-    sd = np.arange(3, 15, 0.5)
+    sd = np.arange(0.5, 15, 0.5)
     # bias (if 2-AFC then 1/2)
     lower_asymptote = 1 / 2
     # lapse_rate = 1 / 2
@@ -220,10 +224,14 @@ def main():
     while T <= T_end:
         next_stim = q.next_stim
         print("next_stim:", next_stim)
-        eps = np.random.choice(range(-3 * min_dx, (3 + 1) * min_dx, min_dx), 1)[0]
+        eps_range = int(len(intensities) * 0.1)  # 10％
+        epss = list(range(-eps_range * min_dx, (eps_range + 1) * min_dx, min_dx))
+        print("eps_range",eps_range)
+        print("epss",epss)
+        eps = np.random.choice(epss, 1)[0]
         eps /= 10
         print("eps:", eps)
-        if next_stim["intensity"] + eps in np.array(list(test_sounds_dict.keys()))/10:
+        if next_stim["intensity"] + eps in np.array(list(test_sounds_dict.keys())) / 10:
             next_stim["intensity"] += eps
         X = next_stim["intensity"]
         print("next_stim:", next_stim)
@@ -300,6 +308,12 @@ def main():
         # likelihoods = q.likelihoods
         # print(f"T={T}, likelihoods[mean]={q.likelihoods['mean']}")
         # print(likelihoods)
+
+        # print("hpd mean:", az.hdi(q.marginal_posterior["mean"]))
+        # print("hpd sd:", az.hdi(q.marginal_posterior["sd"]))
+        # print("hpd mean_sd:", az.hdi(xr.DataArray(q.marginal_posterior["mean"], dims=["mean"], coords={"mean":mean})))
+        # print("hpd mean_sd:", az.hdi(np.array([mean, q.marginal_posterior["mean"]])))
+        # print("hpd mean_sd:", az.hdi(np.array[q.marginal_posterior["mean"],q.marginal_posterior["sd"]]))
 
         axs[0].plot(mean, q.marginal_posterior["mean"], color="blue", alpha=T / T_end, label=T)
         axs[0].set_xlabel("mean")
