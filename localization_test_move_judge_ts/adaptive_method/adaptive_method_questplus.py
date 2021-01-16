@@ -149,14 +149,13 @@ def main():
 
     # Stimulus domain.
     # intensities = np.arange(start=-3.5, stop=-0.5 + 0.25, step=0.25)
-    # orientation = np.array(list(test_sounds_dict.keys())) / 10.0
-    orientation = np.arange(1,30, 1, dtype=np.float)
+    intensities = np.array(list(test_sounds_dict.keys())) / 10.0
 
-    stim_domain = dict(intensity=orientation)
+    stim_domain = dict(intensity=intensities)
 
     # Parameter domain.
-    # thresholds = orientation.copy()
-    thresholds = np.arange(1, 30, 1)
+    # mean = orientation.copy()
+    mean = np.arange(1, 8, 1)
     # beta
     # slope = 3.5
     # sd = 8
@@ -168,12 +167,12 @@ def main():
     lapse_rate = np.arange(0, 0.05, 0.01)
     # lower_asymptote = np.arange(0, 0.05, 0.01)
 
-    param_domain = dict(mean=thresholds,
+    param_domain = dict(mean=mean,
                         sd=sd,
                         lower_asymptote=lower_asymptote,
                         lapse_rate=lapse_rate)
 
-    # mean_fitted = scipy.stats.norm.pdf(thresholds, loc=17.84, scale=8.38)
+    # mean_fitted = scipy.stats.norm.pdf(mean, loc=17.84, scale=8.38)
     # mean_fitted /= mean_fitted.sum()
     # sd_fitted = scipy.stats.norm.pdf(sd, loc=10.83, scale=2.78)
     # sd_fitted /= sd_fitted.sum()
@@ -206,7 +205,7 @@ def main():
     # 試行回数T
     T = 1
     # 総試行回数
-    T_end = 30
+    T_end = 100
     # 初期刺激レベル
     # X = int(max_stimulation_level)
     # 刺激の変化を記録
@@ -216,17 +215,18 @@ def main():
     # 試験開始
     print("試験開始")
 
-    # fig, axs = plt.subplots(1, 4)
+    fig, axs = plt.subplots(1, 4)
 
-    # while True:
-    for i in range(1, T_end + 1):
+    while T <= T_end:
         next_stim = q.next_stim
         print("next_stim:", next_stim)
-
-        plt.plot(orientation, q.EH)
-        plt.show()
-
+        eps = np.random.choice(range(-3 * min_dx, (3 + 1) * min_dx, min_dx), 1)[0]
+        eps /= 10
+        print("eps:", eps)
+        if next_stim["intensity"] + eps in np.array(list(test_sounds_dict.keys()))/10:
+            next_stim["intensity"] += eps
         X = next_stim["intensity"]
+        print("next_stim:", next_stim)
         X = int(X * 10)
         X_list.append(X)
         entropy_list.append(q.entropy)
@@ -238,7 +238,8 @@ def main():
         test_sound = test_sounds_dict[X][rotation_index]
 
         # 試験音再生
-        subprocess("/Users/tetsu/local/bin/2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
+        subprocess(
+            "/Users/tetsu/local/bin/2chplay " + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
         # print("/Users/tetsu/local/bin/2chplay" + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
         # 回答の入力
         answer = input("\n回答 -> ")  # 標準入力
@@ -300,7 +301,7 @@ def main():
         # print(f"T={T}, likelihoods[mean]={q.likelihoods['mean']}")
         # print(likelihoods)
 
-        axs[0].plot(thresholds, q.marginal_posterior["mean"], color="blue", alpha=T / T_end, label=T)
+        axs[0].plot(mean, q.marginal_posterior["mean"], color="blue", alpha=T / T_end, label=T)
         axs[0].set_xlabel("mean")
         axs[0].set_ylabel("probability")
 
@@ -309,11 +310,11 @@ def main():
         axs[1].set_ylabel("probability")
 
         pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
-            intensity=orientation,
-            mean=thresholds[q.marginal_posterior["mean"].argmax()],
-            sd=sd[q.marginal_posterior["sd"].argmax()],
+            intensity=intensities,
+            mean=q.param_estimate['mean'],
+            sd=q.param_estimate['sd'],
             # lapse_rate=lapse_rate,
-            lapse_rate=lapse_rate[q.marginal_posterior["lapse_rate"].argmax()],
+            lapse_rate=q.param_estimate['lapse_rate'],
             # lapse_rate=lapse_rate[q.marginal_posterior["lapse_rate"].argmax()],
             lower_asymptote=lower_asymptote,
             # lower_asymptote=lower_asymptote[q.marginal_posterior["lower_asymptote"].argmax()],
@@ -322,42 +323,42 @@ def main():
         axs[2].set_xlabel("psychometric function")
         axs[2].set_ylabel("probability")
 
-        axs[3].plot(orientation, q.EH, color="yellow", alpha=T / T_end, label=T)
+        axs[3].plot(intensities, q.expected_entropies, color="yellow", alpha=T / T_end, label=T)
         axs[3].set_xlabel("intensity")
         axs[3].set_ylabel("EH")
         # plt.legend()
         # plt.show()
 
-    # ----------------------------------- 試験 ----------------------------------- #
+        # ----------------------------------- 試験 ----------------------------------- #
     plt.legend()
     plt.show()
 
     fig, axs = plt.subplots(1, 4)
-    axs[0].plot(thresholds, q.marginal_posterior["mean"], color="blue")
+    axs[0].plot(mean, q.marginal_posterior["mean"])
     axs[0].set_xlabel("mean")
     axs[0].set_ylabel("probability")
 
-    axs[1].plot(sd, q.marginal_posterior["sd"], color="green")
+    axs[1].plot(sd, q.marginal_posterior["sd"])
     axs[1].set_xlabel("sd")
     axs[1].set_ylabel("probability")
 
     pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
-        intensity=orientation,
-        mean=thresholds[q.marginal_posterior["mean"].argmax()],
-        sd=sd[q.marginal_posterior["sd"].argmax()],
-        # sd=sd[q.marginal_posterior["sd"].argmax()],
+        intensity=intensities,
+        mean=q.param_estimate['mean'],
+        sd=q.param_estimate['sd'],
         # lapse_rate=lapse_rate,
-        lapse_rate=lapse_rate,
+        lapse_rate=q.param_estimate['lapse_rate'],
         # lapse_rate=lapse_rate[q.marginal_posterior["lapse_rate"].argmax()],
         lower_asymptote=lower_asymptote,
+        # lower_asymptote=lower_asymptote[q.marginal_posterior["lower_asymptote"].argmax()],
     ))
-    axs[2].plot(pf_most_probable, color="red")
+    axs[2].plot(pf_most_probable)
     axs[2].set_xlabel("psychometric function")
     axs[2].set_ylabel("probability")
 
-    axs[3].plot(orientation, q.EH, color="yellow", alpha=T / T_end, label=T)
+    axs[3].plot(intensities, q.expected_entropies)
     axs[3].set_xlabel("intensity")
-    axs[3].set_ylabel("EH")
+    axs[3].set_ylabel("expected_entropies")
     plt.show()
 
     for k, v in q.marginal_posterior.items():
@@ -387,15 +388,16 @@ def main():
     plt.title("Path of Entoropy")
     plt.show()
 
-    print(X_list)
-    print(repr(X_list))
-    print(result_list)
-    print(repr(result_list))
+    print("X_list", X_list)
+    print("result_list", result_list)
+    print("q.resp_history", q.resp_history)
+    print("q.stim_history", q.stim_history)
+    print("entropy_list", entropy_list)
 
-    with open(
-            script_dir + subject_dir + "/end_angle_" + start_pos + "/ANSWER/answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + "questplus.json",
-            "w") as qp_json_file:
-        qp_json_file.write(q.to_json())
+    # with open(
+    #         script_dir + subject_dir + "/end_angle_" + start_pos + "/ANSWER/answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + "questplus.json",
+    #         "w") as qp_json_file:
+    #     qp_json_file.write(q.to_json())
 
     # --------------- 試験結果の出力 --------------- #
 
