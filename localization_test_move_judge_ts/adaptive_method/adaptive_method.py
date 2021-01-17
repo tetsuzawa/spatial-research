@@ -15,6 +15,7 @@ import re
 from typing import List, Dict
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.stats
 import psychometrics as psy
@@ -44,7 +45,6 @@ def main():
         print_usage()
         sys.exit(1)
 
-    # script_dir = os.path.dirname(os.path.abspath(__file__)) + "/"  # このスクリプトのパス
     subject_dir = args[0]
     subject_name = subject_dir.split("/")[-1]
     stimulation_const_val = args[1]
@@ -76,7 +76,7 @@ def main():
     # 試験音の最小刺激幅を確認
     stimulation_spacing = check_stimulation_spacing(test_sounds, stimulation_var)
 
-    # 刺激レベルに対する試験音の辞書作成
+    # 刺激量に対する試験音の辞書作成
     test_sounds_dict = make_test_sounds_dict(test_sounds, stimulation_var)
 
     # --------------- 心理測定法の決定 --------------- #
@@ -112,7 +112,7 @@ def main():
     responses = ["Correct", "Incorrect"]
     outcome_domain = dict(response=responses)
 
-    # Further parameters.
+    # その他のパラメータ
     func = "norm_cdf"
     stim_scale = "linear"
     stim_selection_method = "min_entropy"
@@ -139,111 +139,129 @@ def main():
     X_list = []
     result_list = []
     entropy_list = []
+
+    # 結果記録用 データフレーム
+    df = pd.DataFrame(
+        columns=["num_trial", "test_sound", "move_width", "move_time", "start_pos", "rotation_direction",
+                 "answer_rotation", "is_correct", "mean_estimation", "sd_estimation", "lapse_rate_estimation",
+                 "entropy"])
+
+    # 推定過程表示用のfigure
+    fig, axs = plt.subplots(1, 3)
+
     # 試験開始
     print("**************** 試験開始 ****************")
 
-    fig, axs = plt.subplots(1, 3)
+    try:
+        while num_trial <= num_trials:
+            next_stim = q.next_stim
+            print("next_stim:", next_stim)
+            eps_range = int(len(intensities) * 0.1)  # 10％
+            epss = list(
+                range(-eps_range * stimulation_spacing, (eps_range + 1) * stimulation_spacing, stimulation_spacing))
+            print("eps_range", eps_range)
+            print("epss", epss)
+            eps = np.random.choice(epss)
+            eps /= 10
+            print("eps:", eps)
+            if next_stim["intensity"] + eps in np.array(list(test_sounds_dict.keys())) / 10:
+                next_stim["intensity"] += eps
+            X = next_stim["intensity"]
+            print("next_stim:", next_stim)
+            X = int(X * 10)
+            entropy_list.append(q.entropy)
+            # 試行回数読み上げ
+            subprocess("say " + str(num_trial))
 
-    while num_trial <= num_trials:
-        next_stim = q.next_stim
-        print("next_stim:", next_stim)
-        eps_range = int(len(intensities) * 0.1)  # 10％
-        epss = list(range(-eps_range * stimulation_spacing, (eps_range + 1) * stimulation_spacing, stimulation_spacing))
-        print("eps_range", eps_range)
-        print("epss", epss)
-        eps = np.random.choice(epss)
-        eps /= 10
-        print("eps:", eps)
-        if next_stim["intensity"] + eps in np.array(list(test_sounds_dict.keys())) / 10:
-            next_stim["intensity"] += eps
-        X = next_stim["intensity"]
-        print("next_stim:", next_stim)
-        X = int(X * 10)
-        entropy_list.append(q.entropy)
-        # 試行回数読み上げ
-        subprocess("say " + str(num_trial))
+            # c,ccをランダムに選択
+            rotation_index = np.random.choice([0, 1])
+            test_sound = test_sounds_dict[X][rotation_index]
 
-        # c,ccをランダムに選択
-        rotation_index = np.random.choice([0, 1])
-        test_sound = test_sounds_dict[X][rotation_index]
+            # 試験音再生
+            subprocess("/Users/tetsu/local/bin/2chplay " + TS_dir + test_sound)
 
-        # 試験音再生
-        subprocess("/Users/tetsu/local/bin/2chplay " + TS_dir + test_sound)
-        # print("/Users/tetsu/local/bin/2chplay" + script_dir + subject_dir + "/end_angle_" + start_pos + "/TS/" + test_sound)
-        # 回答の入力
-        answer = input("\n回答 -> ")  # 標準入力
+            # 回答の入力
+            answer = input("\n回答 -> ")
 
-        if answer == "1":
-            answer_rotation = "c"
-        elif answer == "0":
-            answer_rotation = "cc"
-        else:
-            # 回答の入力が有効でなければもう一度再生
-            continue
+            if answer == "1":
+                answer_rotation = "c"
+            elif answer == "0":
+                answer_rotation = "cc"
+            else:
+                # 回答の入力が有効でなければもう一度再生
+                continue
 
-        # 試行回数をカウント
-        num_trial += 1
+            # 試行回数をカウント
+            num_trial += 1
 
-        # --------------- 試験音のパラメータ抽出 --------------- #
-        # プログラム的な無駄があるが、先行研究の形式に合わせてある
-        parameter = test_sounds_dict[X][rotation_index].replace("move_judge_", "").replace(".DSB", "")
-        parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
-        move_width = parameter_divide.group(1).replace("w", "")
-        move_time = parameter_divide.group(2).replace("mt", "")
-        rotation_direction = parameter_divide.group(3)
-        start_pos = parameter_divide.group(4).split(".")[0]
-        # --------------- 試験音のパラメータ抽出 --------------- #
+            # 試験音のパラメータ抽出
+            # プログラム的な無駄があるが、先行研究の形式に合わせてある
+            parameter = test_sounds_dict[X][rotation_index].replace("move_judge_", "").replace(".DSB", "")
+            parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
+            move_width = parameter_divide.group(1).replace("w", "")
+            move_time = parameter_divide.group(2).replace("mt", "")
+            rotation = parameter_divide.group(3)
+            start_pos = parameter_divide.group(4).split(".")[0]
 
-        # 正誤判定
-        is_correct = answer_rotation == rotation_direction
-        X_list.append(X)
-        result = "Correct" if is_correct else "Incorrect"
-        result_list.append(result)
+            # 正誤判定
+            X_list.append(X)
+            result = "Correct" if answer_rotation == rotation else "Incorrect"
+            result_list.append(result)
 
-        # 途中経過の出力
+            # 刺激量の更新
+            q.update(stim=next_stim, outcome=dict(response=result))
 
-        print(f"刺激レベルX: {next_stim}")
-        print(f"正誤: {is_correct}\n")
+            # 結果の書き込み
+            series = pd.Series(
+                [num_trial, test_sound, move_width, move_time, start_pos, rotation, answer_rotation, result,
+                 q.param_estimate["mean"], q.param_estimate["sd"], q.param_estimate["lapse_rate"], q.entropy],
+                index=df.columns)
+            df.append(series, ignore_index=True)
 
-        # --------------- 結果の記録 --------------- #
-        with open(
-                ANSWER_dir + "answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + ".csv",
-                "a") as answer_file:
+            # 途中経過の出力
+            print(f"刺激量X: {next_stim}")
+            print(f"正誤: {result}\n")
+            print("\n刺激量の推定閾値")
+            print("mean:", q.param_estimate["mean"])
+            print("sd:", q.param_estimate["sd"])
+            print("lapse_rate:", q.param_estimate["lapse_rate"])
+            print("\nエントロピー:", q.entropy)
+            print("-------------------------------------------------------")
 
-            is_correct_str = "1" if is_correct else "0"
-            answer_file.write(test_sounds_dict[X][rotation_index] + "," + move_width + "," + move_time
-                              + "," + start_pos + "," + rotation_direction + "," + answer_rotation + "," + is_correct_str + "\n")
-        # --------------- 結果の記録 --------------- #
+            # 途中経過のプロット
+            axs[0].plot(mean, q.marginal_posterior["mean"], color="blue", alpha=num_trial / num_trials)
+            axs[0].set_xlabel("mean domain")
+            axs[0].set_ylabel("Probability")
+            axs[0].set_title("Posterior PDF (mean)")
 
-        # 刺激レベルの更新
-        q.update(stim=next_stim, outcome=dict(response=result))
+            axs[1].plot(sd, q.marginal_posterior["sd"], color="green", alpha=num_trial / num_trials)
+            axs[1].set_xlabel("sd domain")
+            axs[1].set_ylabel("Probability")
+            axs[1].set_title("Posterior PDF (sd)")
 
-        print(f"\n刺激レベルの推定閾値 mean: {q.param_estimate['mean']}, sd:{q.param_estimate['sd']}")
-        print(f"entropy: {q.entropy}")
+            pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
+                intensity=intensities,
+                mean=q.param_estimate["mean"],
+                sd=q.param_estimate["sd"],
+                lapse_rate=q.param_estimate["lapse_rate"],
+                lower_asymptote=lower_asymptote,
+            ))
+            axs[2].plot(pf_most_probable, color="red", alpha=num_trial / num_trials)
+            axs[2].set_xlabel("intensity")
+            axs[2].set_ylabel("Probability")
+            axs[2].set_title("PF(x)")
 
-        axs[0].plot(mean, q.marginal_posterior["mean"], color="blue", alpha=num_trial / num_trials)
-        axs[0].set_xlabel("mean domain")
-        axs[0].set_ylabel("Probability")
-        axs[0].set_title("Posterior PDF (mean)")
-
-        axs[1].plot(sd, q.marginal_posterior["sd"], color="green", alpha=num_trial / num_trials)
-        axs[1].set_xlabel("sd domain")
-        axs[1].set_ylabel("Probability")
-        axs[1].set_title("Posterior PDF (sd)")
-
-        pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
-            intensity=intensities,
-            mean=q.param_estimate['mean'],
-            sd=q.param_estimate['sd'],
-            lapse_rate=q.param_estimate['lapse_rate'],
-            lower_asymptote=lower_asymptote,
-        ))
-        axs[2].plot(pf_most_probable, color="red", alpha=num_trial / num_trials)
-        axs[2].set_xlabel("intensity")
-        axs[2].set_ylabel("Probability")
-        axs[2].set_title("PF(x)")
-
-        # ----------------------------------- 試験 ----------------------------------- #
+            # ----------------------------------- 試験 ----------------------------------- #
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt", file=sys.stderr)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + ".csv"
+        df.to_csv(result_file_name, index=False)
+        sys.exit(1)
+    finally:
+        result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stimulation_const_val + "_" + start_pos + "_" + test_number + ".csv"
+        df.to_csv(result_file_name, index=False)
 
     print("**************** 試験終了 ****************")
 
@@ -263,9 +281,9 @@ def main():
 
     pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
         intensity=intensities,
-        mean=q.param_estimate['mean'],
-        sd=q.param_estimate['sd'],
-        lapse_rate=q.param_estimate['lapse_rate'],
+        mean=q.param_estimate["mean"],
+        sd=q.param_estimate["sd"],
+        lapse_rate=q.param_estimate["lapse_rate"],
         lower_asymptote=lower_asymptote,
     ))
 
@@ -277,9 +295,8 @@ def main():
     fig.suptitle("Posterior PDF")
     plt.show()
 
-    # --------------- 試験結果の出力 --------------- #
-    # print(f"{T}回目の回答で実験が終了しました.")
-    # print(f"刺激レベルの推定閾値: {X}")
+    # ------------------------------ 試験結果の出力 ------------------------------ #
+    print(f"{num_trial}回目の回答で実験が終了しました.")
 
     print("パラメータ推定結果")
     for param_name, value in q.param_estimate.items():
@@ -287,7 +304,7 @@ def main():
 
     fig, axs = plt.subplots(1, 2)
 
-    # 刺激レベルの軌跡
+    # 刺激量の軌跡
     axs[0].plot(list(range(1, num_trials + 1)), X_list, "o-")
     axs[0].set_xlabel("Numbers of trials T")
     axs[0].set_ylabel("Stimulation level X")
@@ -306,8 +323,7 @@ def main():
     print("q.stim_history", q.stim_history)
     print("entropy_list", entropy_list)
 
-
-    # --------------- 試験結果の出力 --------------- #
+    # ------------------------------ 試験結果の出力 ------------------------------ #
 
 
 # コマンドの実行
@@ -317,6 +333,7 @@ def subprocess(cmd):
 
 
 def glob_test_sounds(target_dir: str, start_pos: str, stimulation_const_val: str, stimulation_var: str) -> List[str]:
+    """指定した条件の試験音をすべて読み込む"""
     if stimulation_var == "w":
         # move_judge_w*_mtXX_*_{start_angle}_*.DDB を取得
         test_sounds = sorted(
@@ -333,7 +350,7 @@ def glob_test_sounds(target_dir: str, start_pos: str, stimulation_const_val: str
         print_usage()
         sys.exit(1)
 
-    print(f"試験音を{len(test_sounds)}個読み込みました", file=sys.stderr)
+    print(f"試験音を{len(test_sounds)}個読み込みました")
 
     # 取得した試験音のファイル名からtarget_dir部分を削除
     test_sounds = [test_sound.replace(target_dir, "") for test_sound in test_sounds]
@@ -341,6 +358,7 @@ def glob_test_sounds(target_dir: str, start_pos: str, stimulation_const_val: str
 
 
 def min_max_stimulation_level(test_sounds: np.ndarray, stimulation_var: str) -> (int, int):
+    """最低と最高の刺激量を確認する"""
     min_parameter = test_sounds[0, 0].replace("move_judge_", "").replace(".DSB", "")
     max_parameter = test_sounds[-1, 0].replace("move_judge_", "").replace(".DSB", "")
     min_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", min_parameter)
@@ -355,6 +373,7 @@ def min_max_stimulation_level(test_sounds: np.ndarray, stimulation_var: str) -> 
 
 
 def check_stimulation_spacing(test_sounds: np.ndarray, stimulation_var: str) -> int:
+    """刺激量の間隔を確認する"""
     min_parameter = test_sounds[0, 0].replace("move_judge_", "").replace(".DSB", "")
     one_level_upper_parameter = test_sounds[1, 0].replace("move_judge_", "").replace(".DSB", "")
     min_parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", min_parameter)
@@ -370,20 +389,21 @@ def check_stimulation_spacing(test_sounds: np.ndarray, stimulation_var: str) -> 
 
 
 def make_test_sounds_dict(test_sounds: np.ndarray, stimulation_var) -> Dict[int, str]:
+    """刺激量に対する試験音の辞書作成"""
     min_stimulation_level, max_stimulation_level = min_max_stimulation_level(test_sounds, stimulation_var)
     test_sounds_dict = {}
     for test_sound_both in test_sounds:
-        # 時計回りの試験音だけ読み込んで刺激レベルを確認
+        # 時計回りの試験音だけ読み込んで刺激量を確認
         parameter = test_sound_both[0].replace("move_judge_", "").replace(".DSB", "")
         parameter_divide = re.search("(.*)_(.*)_(.*)_(.*)", parameter)
         if stimulation_var == "w":
             stimulation_level = parameter_divide.group(1).replace("w", "")
         else:
             stimulation_level = parameter_divide.group(2).replace("mt", "")
-            # mtの場合、数字が大きいほど刺激レベルが小さくなるので、反転させる
+            # mtの場合、数字が大きいほど刺激量が小さくなるので、反転させる
             stimulation_level = str(
                 int(max_stimulation_level) + int(min_stimulation_level) - int(stimulation_level))
-        # 刺激レベルに対する[c,cc]の試験音の配列を登録
+        # 刺激量に対する[c,cc]の試験音の配列を登録
         test_sounds_dict[int(stimulation_level)] = test_sound_both
     return test_sounds_dict
 
