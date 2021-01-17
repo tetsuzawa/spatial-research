@@ -13,6 +13,7 @@ import glob
 import re
 from typing import List, Dict
 from subprocess import Popen
+import time
 
 import numpy as np
 import pandas as pd
@@ -70,6 +71,10 @@ def main():
     test_sounds_dict = make_test_sounds_dict(test_sounds, stim_var)
 
     # --------------- 心理測定法の決定 --------------- #
+    # 真値
+    mean_true = 5.6
+    sd_true = 4.5
+    lapse_rate_true = 0.01
 
     # 刺激ドメイン (単位を合わせるために10で割る)
     intensities = np.array(list(test_sounds_dict.keys())) / 10.0
@@ -126,7 +131,7 @@ def main():
     # 試行回数T
     num_trial = 1
     # 総試行回数
-    num_trials = 100
+    num_trials = 1000
 
     # 刺激の過程を記録
     stim_history = []
@@ -166,21 +171,21 @@ def main():
             rotation_index = np.random.choice([0, 1])
             test_sound = test_sounds_dict[stim][rotation_index]
 
-            # 試行回数読み上げ
-            subprocess("say " + str(num_trial))
-            # 試験音再生
-            subprocess("/Users/tetsu/local/bin/2chplay " + TS_dir + test_sound)
-
-            # 回答の入力
-            answer = input("\n回答 -> ")
-
-            if answer == "1":
-                answer_rotation = "c"
-            elif answer == "0":
-                answer_rotation = "cc"
-            else:
-                # 回答の入力が有効でなければもう一度再生
-                continue
+            # # 試行回数読み上げ
+            # subprocess("say " + str(num_trial))
+            # # 試験音再生
+            # subprocess("/Users/tetsu/local/bin/2chplay " + TS_dir + test_sound)
+            #
+            # # 回答の入力
+            # answer = input("\n回答 -> ")
+            #
+            # if answer == "1":
+            #     answer_rotation = "c"
+            # elif answer == "0":
+            #     answer_rotation = "cc"
+            # else:
+            #     # 回答の入力が有効でなければもう一度再生
+            #     continue
 
             # 試行回数をカウント
             num_trial += 1
@@ -195,7 +200,27 @@ def main():
             start_pos = parameter_divide.group(4).split(".")[0]
 
             # 正誤判定
-            result = "Correct" if answer_rotation == rotation else "Incorrect"
+            # result = "Correct" if answer_rotation == rotation else "Incorrect"
+            rnd = 0.5 * np.random.rand() + 0.5
+            val_true = float(np.squeeze(qp.qp.psychometric_function.norm_cdf(
+                intensity=stim / 10,
+                mean=mean_true,
+                sd=sd_true,
+                lapse_rate=lapse_rate_true,
+                lower_asymptote=lower_asymptote,
+            )))
+            print("rnd", rnd)
+            print("val_true", val_true)
+            is_correct = rnd < val_true
+            result = "Correct" if is_correct else "Incorrect"
+            if is_correct and rotation == "c":
+                answer_rotation = "c"
+            elif is_correct and rotation == "cc":
+                answer_rotation = "cc"
+            elif not is_correct and rotation == "c":
+                answer_rotation = "cc"
+            else:
+                answer_rotation = "c"
 
             stim_history.append(stim)
             result_history.append(result)
@@ -306,6 +331,27 @@ def main():
     print("stim history", stim_history)
     print("result history", result_history)
     print("entropy history", entropy_history)
+
+    pf_true = np.squeeze(qp.qp.psychometric_function.norm_cdf(
+        intensity=intensities,
+        mean=mean_true,
+        sd=sd_true,
+        lapse_rate=lapse_rate_true,
+        lower_asymptote=lower_asymptote,
+    ))
+    pf_estimated = np.squeeze(qp.qp.psychometric_function.norm_cdf(
+        intensity=intensities,
+        mean=q.param_estimate["mean"],
+        sd=q.param_estimate["sd"],
+        lapse_rate=q.param_estimate["lapse_rate"],
+        lower_asymptote=lower_asymptote,
+    ))
+    plt.plot(pf_true, label="true")
+    plt.plot(pf_estimated, label="estimated")
+    plt.xlabel("intensity")
+    plt.ylabel("Probability")
+    plt.title("PF(x)")
+    plt.show()
 
     # ------------------------------ 試験結果の出力 ------------------------------ #
 
