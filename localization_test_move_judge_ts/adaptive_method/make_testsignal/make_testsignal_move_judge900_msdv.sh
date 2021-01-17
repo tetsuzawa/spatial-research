@@ -19,7 +19,7 @@ set -Ceu
 # 引数が間違っている場合終了
 if [ $# -ne 2 ]; then
   printf "\e[31;1m error: bad commandline format \n"
-  printf " usage: bash make_testsignal_move_judge90_msdv.sh SUBJECT_DIR OUT_SUBJECT_DIR\e[m \n\n"
+  printf " usage: bash make_testsignal_move_judge900_msdv.sh SUBJECT_DIR OUT_SUBJECT_DIR\e[m \n\n"
   exit 1
 fi
 
@@ -28,10 +28,8 @@ OUT_SUBJECT_DIR=$2
 
 WHITE_NOISE=input_files/w60s.DSB
 # seq の -w オプションは桁合わせのゼロ埋めを有効化
-# move_width_list=(1 2 3 4 5)
-# move_velocity_list=(2 4 8 16 32)
-move_width_list=`seq -w 1 60`
-move_velocity_list=`seq -w 1 50`
+move_width_list=`seq -w 10 10 600`
+move_velocity_list=(020 040 080 160 320)
 
 end_angle=90
 
@@ -53,7 +51,7 @@ for move_width in ${move_width_list[@]}; do
     echo "${OUT_SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/end_angle_${end_angle}/TS"
   done
 done
-) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 continuous_move_judge_dv.py
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} overlap-add
 #---------------------------------------------------------------------------------------#
 
 #---------------------------------最大音圧の調整---------------------------------#
@@ -94,7 +92,7 @@ for move_width in ${move_width_list[@]}; do
     done
   done
 done
-) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 cosine_windowing.py
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} cosine_windowing
 # -----------------------------------------コサイン窓----------------------------------------------#
 
 # ---------------------------------------dv------------------------------------------------------#

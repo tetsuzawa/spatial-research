@@ -28,9 +28,6 @@ OUT_SUBJECT_DIR=$2
 
 WHITE_NOISE=input_files/w35s.DSB
 # seq の -w オプションは桁合わせのゼロ埋めを有効化
-# move_width_list=(1 2 3 4 5)
-# move_velocity_list=(2 4 8 16 32)
-#move_width_list=`seq -w 10 10 300`
 move_width_list=`seq -w 10 10 500`
 move_velocity_list=(020 040 080 160 320)
 end_angle=450
@@ -53,7 +50,7 @@ for move_width in ${move_width_list[@]}; do
     echo "${OUT_SUBJECT_DIR} ${WHITE_NOISE} ${move_width} ${move_velocity} ${end_angle} ${OUT_SUBJECT_DIR}/end_angle_${end_angle}/TS"
   done
 done
-) | xargs -t -L 1 -P ${NUM_CPU_CORE} python3 continuous_move_judge_dv.py
+) | xargs -t -L 1 -P ${NUM_CPU_CORE} overlap-add
 #---------------------------------------------------------------------------------------#
 
 #---------------------------------最大音圧の調整---------------------------------#
