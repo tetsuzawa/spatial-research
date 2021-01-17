@@ -1,22 +1,14 @@
-import sys
-import glob
 import os
-import re
 import time
+from subprocess import Popen
 
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy.stats
-import psychometrics as psy
-import questplus as qp
-
-from subprocess import Popen
 
 
 def main():
-    resp_list = []
-    problem_list = []
-    correctness_list = []
+    answer_history = []
+    rotation_history = []
+    result_history = []
     script_dir = os.path.dirname(os.path.abspath(__file__)) + "/"
     subject_dir = "SUBJECTS/TMP3"
     start_pos = "450"
@@ -30,15 +22,15 @@ def main():
         answer = input("\n回答 -> ")  # 標準入力
         if answer not in ["0", "1"]:
             continue
-        resp_list.append(int(answer))
-        problem_list.append(rotation)
-        correctness_list.append(1 if int(answer) == rotation else 0)
+        answer_history.append(int(answer))
+        rotation_history.append(rotation)
+        result_history.append(1 if int(answer) == rotation else 0)
         time.sleep(0.1)
 
-    print(resp_list)
-    print(problem_list)
-    print(correctness_list)
-    print("mean:", np.array(correctness_list).mean())
+    print(answer_history)
+    print(rotation_history)
+    print(result_history)
+    print("mean:", np.array(result_history).mean())
 
 
 # コマンドの実行
