@@ -71,15 +71,13 @@ def main():
 
     # --------------- 心理測定法の決定 --------------- #
 
-    # 刺激ドメイン (1[deg]単位に合わせるために10で割る)
+    # 刺激ドメイン (単位を合わせるために10で割る)
     intensities = np.array(list(test_sounds_dict.keys())) / 10.0
     stim_domain = dict(intensity=intensities)
 
     # パラメータドメイン
-    # TODO どうやって平均値の範囲を決めるか
     mean = intensities.copy()
     # mean = np.arange(1, 30, 1)
-    # TODO どうやって標準偏差の範囲を決めるか
     sd = np.arange(0.5, 15, 0.5)
     # bias (if 2-AFC then 1/2)
     lower_asymptote = 1 / 2
@@ -129,15 +127,18 @@ def main():
     num_trial = 1
     # 総試行回数
     num_trials = 100
-    # 刺激の変化を記録
+
+    # 刺激の過程を記録
     stim_history = []
     result_history = []
     entropy_history = []
-    stim_range = int(len(intensities) * 0.1)  # 10％
+
+    # 刺激の10％をランダムにずらす
+    stim_range = int(len(intensities) * 0.1)
     print("stim_range:", stim_range)
     stim_deviations = list(range(-stim_range * stim_spacing, (stim_range + 1) * stim_spacing, stim_spacing))
 
-    # 結果記録用 データフレーム
+    # 結果記録用データフレーム
     df = pd.DataFrame(
         columns=["num_trial", "test_sound", "move_width", "move_time", "start_pos", "rotation_direction",
                  "answer_rotation", "is_correct", "mean_estimation", "sd_estimation", "lapse_rate_estimation",
@@ -285,7 +286,6 @@ def main():
 
     # ------------------------------ 試験結果の出力 ------------------------------ #
     print(f"{num_trial}回目の回答で実験が終了しました.")
-
     print("パラメータ推定結果:", q.param_estimate)
 
     fig, axs = plt.subplots(1, 2)
