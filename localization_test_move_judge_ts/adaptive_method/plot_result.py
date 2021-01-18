@@ -9,10 +9,6 @@
 # ##################################################
 
 import sys
-import glob
-import re
-from typing import List, Dict
-from subprocess import Popen
 import json
 
 import numpy as np
@@ -47,23 +43,9 @@ def main():
 
     stim_domain = qp_params["stim_domain"]
     param_domain = qp_params["param_domain"]
-    outcome_domain = qp_params["outcome_domain"]
-    func = qp_params["func"]
-    prior = qp_params["prior"]
-    stim_scale = qp_params["stim_scale"]
-    stim_selection_method = qp_params["stim_selection_method"]
-    param_estimation_method = qp_params["param_estimation_method"]
 
     # Initialize the QUEST+ staircase.
-    q = qp.QuestPlus(stim_domain=stim_domain,
-                     param_domain=param_domain,
-                     outcome_domain=outcome_domain,
-                     func=func,
-                     prior=prior,
-                     stim_scale=stim_scale,
-                     stim_selection_method=stim_selection_method,
-                     param_estimation_method=param_estimation_method,
-                     )
+    q = qp.QuestPlus(**qp_params)
 
     intensity = stim_domain["intensity"]
     mean = param_domain["mean"]
@@ -93,14 +75,14 @@ def main():
     while num_trial <= num_trials:
         # エントロピーを内部で計算
         _ = q.next_stim["intensity"]
-        stim = int(df.at[num_trial-1, "move_width"]) / 10
+        stim = int(df.at[num_trial - 1, "move_width"]) / 10
         print("stim", stim)
 
         # 刺激の単位合わせ
         stim = int(stim * 10)
 
         # 正誤判定
-        result = df.at[num_trial-1, "is_correct"]
+        result = df.at[num_trial - 1, "response"]
 
         stim_history.append(stim)
         result_history.append(result)
@@ -111,12 +93,12 @@ def main():
 
         # 途中経過のプロット
         axs[0].plot(mean, q.marginal_posterior["mean"], color="blue", alpha=num_trial / num_trials)
-        axs[0].set_xlabel("mean domain")
+        axs[0].set_xlabel("mean")
         axs[0].set_ylabel("Probability")
         axs[0].set_title("Posterior PDF (mean)")
 
         axs[1].plot(sd, q.marginal_posterior["sd"], color="green", alpha=num_trial / num_trials)
-        axs[1].set_xlabel("sd domain")
+        axs[1].set_xlabel("sd")
         axs[1].set_ylabel("Probability")
         axs[1].set_title("Posterior PDF (sd)")
 
@@ -135,18 +117,17 @@ def main():
         # 試行回数をカウント
         num_trial += 1
 
-
     fig.suptitle("Tracks of estimation")
     plt.show()
 
     fig, axs = plt.subplots(1, 3)
     axs[0].plot(mean, q.marginal_posterior["mean"], color="blue")
-    axs[0].set_xlabel("mean domain")
+    axs[0].set_xlabel("mean")
     axs[0].set_ylabel("Probability")
     axs[0].set_title("Posterior PDF (mean)")
 
     axs[1].plot(sd, q.marginal_posterior["sd"], color="green")
-    axs[1].set_xlabel("sd domain")
+    axs[1].set_xlabel("sd")
     axs[1].set_ylabel("Probability")
     axs[1].set_title("Posterior PDF (sd)")
 
