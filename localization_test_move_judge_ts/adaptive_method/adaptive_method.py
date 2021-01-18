@@ -11,6 +11,7 @@
 import sys
 import glob
 import re
+import json
 from typing import List, Dict
 from subprocess import Popen
 
@@ -72,12 +73,11 @@ def main():
     # --------------- 心理測定法の決定 --------------- #
 
     # 刺激ドメイン (単位を合わせるために10で割る)
-    intensities = np.array(list(test_sounds_dict.keys())) / 10.0
-    stim_domain = dict(intensity=intensities)
+    intensity = np.array(list(test_sounds_dict.keys())) / 10.0
+    stim_domain = dict(intensity=intensity)
 
     # パラメータドメイン
-    mean = intensities.copy()
-    # mean = np.arange(1, 30, 1)
+    mean = intensity.copy()
     sd = np.arange(0.5, 20, 0.5)
     # bias (if 2-AFC then 1/2)
     lower_asymptote = 1 / 2
@@ -93,12 +93,13 @@ def main():
     # mean_fitted /= mean_fitted.sum()
     # sd_fitted = scipy.stats.norm.pdf(sd, loc=10.83, scale=2.78)
     # sd_fitted /= sd_fitted.sum()
-    # prior_param_domain = dict(mean=mean_fitted, sd=sd_fitted)
+    # prior = dict(mean=mean_fitted, sd=sd_fitted)
+    prior = None
 
     # 結果ドメイン
     # Outcome (response) domain.
-    responses = ["Correct", "Incorrect"]
-    outcome_domain = dict(response=responses)
+    response = ["Correct", "Incorrect"]
+    outcome_domain = dict(response=response)
 
     # その他のパラメータ
     func = "norm_cdf"
@@ -107,17 +108,22 @@ def main():
     param_estimation_method = "mean"
 
     # Initialize the QUEST+ staircase.
-    q = qp.QuestPlus(stim_domain=stim_domain,
-                     func=func,
-                     stim_scale=stim_scale,
+    qp_params = dict(stim_domain=stim_domain,
                      param_domain=param_domain,
                      outcome_domain=outcome_domain,
+                     prior=prior,
+                     func=func,
+                     stim_scale=stim_scale,
                      stim_selection_method=stim_selection_method,
-                     param_estimation_method=param_estimation_method,
-                     # prior=prior_param_domain,
-                     )
+                     param_estimation_method=param_estimation_method)
+    q = qp.QuestPlus(**qp_params)
 
-    print("intensities:", intensities)
+    # QUEST+ パラメータの保存
+    qp_params_file_name = ANSWER_dir + "qp_params_" + subject_name + "_" + stim_const_val + "_" + start_pos + "_" + test_number + ".json"
+    with open(qp_params_file_name, 'w') as f:
+        json.dump(qp_params, f, indent=2, cls=JSONEncoderNDArray)
+
+    print("intensitiy:", intensity)
     print("mean:", mean)
     print("sd:", sd)
     # --------------- 心理測定法の決定 --------------- #
@@ -130,18 +136,18 @@ def main():
 
     # 刺激の過程を記録
     stim_history = []
-    result_history = []
+    response_history = []
     entropy_history = []
 
     # 刺激の10％をランダムにずらす
-    stim_range = int(len(intensities) * 0.1)
+    stim_range = int(len(intensity) * 0.1)
     print("stim_range:", stim_range)
     stim_deviations = list(range(-stim_range * stim_spacing, (stim_range + 1) * stim_spacing, stim_spacing))
 
     # 結果記録用データフレーム
     df = pd.DataFrame(
         columns=["num_trial", "test_sound", "move_width", "move_time", "start_pos", "rotation_direction",
-                 "answer_rotation", "is_correct", "mean_estimation", "sd_estimation", "lapse_rate_estimation",
+                 "answer_rotation", "response", "mean_estimation", "sd_estimation", "lapse_rate_estimation",
                  "entropy"])
 
     # 推定過程表示用のfigure
@@ -150,21 +156,25 @@ def main():
     # 試験開始
     print("\n************************* 試験開始 *************************")
 
+    # 試験音のロック用フラグ（聞き直しの際に試験音が変わることを防ぐため）
+    test_sound_selected = False
+
     try:
         while num_trial <= num_trials:
-            stim = q.next_stim["intensity"]
-            stim_deviation = np.random.choice(stim_deviations) / 10.0
-            print("stim deviation:", stim_deviation)
-            if int((stim + stim_deviation) * 10) in test_sounds_dict.keys():
-                stim += stim_deviation
-            print("original stim:", q.next_stim["intensity"], "stim with deviation:", stim)
+            if not test_sound_selected:
+                stim = q.next_stim["intensity"]
+                stim_deviation = np.random.choice(stim_deviations) / 10.0
+                print("stim deviation:", stim_deviation)
+                if int((stim + stim_deviation) * 10) in test_sounds_dict.keys():
+                    stim += stim_deviation
+                print("original stim:", q.next_stim["intensity"], "stim with deviation:", stim)
 
-            # 刺激の単位合わせ
-            stim = int(stim * 10)
+                # 刺激の単位合わせ
+                stim = int(stim * 10)
 
-            # c,ccをランダムに選択
-            rotation_index = np.random.choice([0, 1])
-            test_sound = test_sounds_dict[stim][rotation_index]
+                # c,ccをランダムに選択
+                rotation_index = np.random.choice([0, 1])
+                test_sound = test_sounds_dict[stim][rotation_index]
 
             # 試行回数読み上げ
             subprocess("say " + str(num_trial))
@@ -179,8 +189,13 @@ def main():
             elif answer == "0":
                 answer_rotation = "cc"
             else:
+                # 試験音のロック
+                test_sound_selected = True
                 # 回答の入力が有効でなければもう一度再生
                 continue
+
+            # 試験音のロック解除
+            test_sound_selected = False
 
             # 試験音のパラメータ抽出
             # プログラム的な無駄があるが、先行研究の形式に合わせてある
@@ -192,18 +207,18 @@ def main():
             start_pos = parameter_divide.group(4).split(".")[0]
 
             # 正誤判定
-            result = "Correct" if answer_rotation == rotation else "Incorrect"
+            response = "Correct" if answer_rotation == rotation else "Incorrect"
 
             stim_history.append(stim)
-            result_history.append(result)
+            response_history.append(response)
             entropy_history.append(q.entropy)
 
             # 刺激量の更新
-            q.update(stim=dict(intensity=stim / 10), outcome=dict(response=result))
+            q.update(stim=dict(intensity=stim / 10), outcome=dict(response=response))
 
             # 結果の書き込み
             series = pd.Series(
-                [num_trial, test_sound, move_width, move_time, start_pos, rotation, answer_rotation, result,
+                [num_trial, test_sound, move_width, move_time, start_pos, rotation, answer_rotation, response,
                  q.param_estimate["mean"], q.param_estimate["sd"], q.param_estimate["lapse_rate"], q.entropy],
                 index=df.columns)
             df = df.append(series, ignore_index=True)
@@ -214,24 +229,24 @@ def main():
             # 途中経過の出力
             print("試行回数:", num_trial)
             print("刺激量X:", stim / 10)
-            print("正誤:", result)
+            print("正誤:", response)
             print("\nパラメータ推定値:", q.param_estimate)
             print("エントロピー:", q.entropy)
             print("-------------------------------------------------------\n")
 
             # 途中経過のプロット
             axs[0].plot(mean, q.marginal_posterior["mean"], color="blue", alpha=num_trial / num_trials)
-            axs[0].set_xlabel("mean domain")
+            axs[0].set_xlabel("mean")
             axs[0].set_ylabel("Probability")
             axs[0].set_title("Posterior PDF (mean)")
 
             axs[1].plot(sd, q.marginal_posterior["sd"], color="green", alpha=num_trial / num_trials)
-            axs[1].set_xlabel("sd domain")
+            axs[1].set_xlabel("sd")
             axs[1].set_ylabel("Probability")
             axs[1].set_title("Posterior PDF (sd)")
 
             pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
-                intensity=intensities,
+                intensity=intensity,
                 mean=q.param_estimate["mean"],
                 sd=q.param_estimate["sd"],
                 lapse_rate=q.param_estimate["lapse_rate"],
@@ -260,17 +275,17 @@ def main():
 
     fig, axs = plt.subplots(1, 3)
     axs[0].plot(mean, q.marginal_posterior["mean"], color="blue")
-    axs[0].set_xlabel("mean domain")
+    axs[0].set_xlabel("mean")
     axs[0].set_ylabel("Probability")
     axs[0].set_title("Posterior PDF (mean)")
 
     axs[1].plot(sd, q.marginal_posterior["sd"], color="green")
-    axs[1].set_xlabel("sd domain")
+    axs[1].set_xlabel("sd")
     axs[1].set_ylabel("Probability")
     axs[1].set_title("Posterior PDF (sd)")
 
     pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
-        intensity=intensities,
+        intensity=intensity,
         mean=q.param_estimate["mean"],
         sd=q.param_estimate["sd"],
         lapse_rate=q.param_estimate["lapse_rate"],
@@ -305,7 +320,7 @@ def main():
     plt.show()
 
     print("stim history", stim_history)
-    print("result history", result_history)
+    print("result history", response_history)
     print("entropy history", entropy_history)
 
     # ------------------------------ 試験結果の出力 ------------------------------ #
@@ -391,6 +406,14 @@ def make_test_sounds_dict(test_sounds: np.ndarray, stim_var) -> Dict[int, str]:
         # 刺激量に対する[c,cc]の試験音の配列を登録
         test_sounds_dict[int(stim_level)] = test_sound_both
     return test_sounds_dict
+
+
+class JSONEncoderNDArray(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(JSONEncoderNDArray, self).default(obj)
 
 
 if __name__ == "__main__":
