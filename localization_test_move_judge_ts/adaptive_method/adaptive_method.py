@@ -78,7 +78,7 @@ def main():
     # パラメータドメイン
     mean = intensities.copy()
     # mean = np.arange(1, 30, 1)
-    sd = np.arange(0.5, 15, 0.5)
+    sd = np.arange(0.5, 20, 0.5)
     # bias (if 2-AFC then 1/2)
     lower_asymptote = 1 / 2
     # rate of mistake
@@ -169,7 +169,7 @@ def main():
             # 試行回数読み上げ
             subprocess("say " + str(num_trial))
             # 試験音再生
-            subprocess("/Users/tetsu/local/bin/2chplay " + TS_dir + test_sound)
+            subprocess("2chplay " + TS_dir + test_sound)
 
             # 回答の入力
             answer = input("\n回答 -> ")
@@ -181,9 +181,6 @@ def main():
             else:
                 # 回答の入力が有効でなければもう一度再生
                 continue
-
-            # 試行回数をカウント
-            num_trial += 1
 
             # 試験音のパラメータ抽出
             # プログラム的な無駄があるが、先行研究の形式に合わせてある
@@ -211,7 +208,11 @@ def main():
                 index=df.columns)
             df = df.append(series, ignore_index=True)
 
+            # 試行回数をカウント
+            num_trial += 1
+
             # 途中経過の出力
+            print("試行回数:", num_trial)
             print("刺激量X:", stim / 10)
             print("正誤:", result)
             print("\nパラメータ推定値:", q.param_estimate)

@@ -131,7 +131,7 @@ def main():
     # 試行回数T
     num_trial = 1
     # 総試行回数
-    num_trials = 1000
+    num_trials = 100
 
     # 刺激の過程を記録
     stim_history = []
