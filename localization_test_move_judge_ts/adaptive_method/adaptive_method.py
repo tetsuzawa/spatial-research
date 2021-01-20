@@ -175,6 +175,8 @@ def main():
                 # c,ccをランダムに選択
                 rotation_index = np.random.choice([0, 1])
                 test_sound = test_sounds_dict[stim][rotation_index]
+                # 試験音のロック
+                test_sound_selected = True
 
             # 試行回数読み上げ
             subprocess("say " + str(num_trial))
@@ -189,8 +191,6 @@ def main():
             elif answer == "0":
                 answer_rotation = "cc"
             else:
-                # 試験音のロック
-                test_sound_selected = True
                 # 回答の入力が有効でなければもう一度再生
                 continue
 
