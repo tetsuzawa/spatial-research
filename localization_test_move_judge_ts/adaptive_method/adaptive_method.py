@@ -142,7 +142,7 @@ def main():
     # 刺激の10％をランダムにずらす
     stim_range = int(len(intensity) * 0.1)
     print("stim_range:", stim_range)
-    stim_deviations = list(range(-stim_range * stim_spacing, (stim_range + 1) * stim_spacing, stim_spacing))
+    stim_jitters = list(range(-stim_range * stim_spacing, (stim_range + 1) * stim_spacing, stim_spacing))
 
     # 結果記録用データフレーム
     df = pd.DataFrame(
@@ -163,11 +163,11 @@ def main():
         while num_trial <= num_trials:
             if not test_sound_selected:
                 stim = q.next_stim["intensity"]
-                stim_deviation = np.random.choice(stim_deviations) / 10.0
-                print("stim deviation:", stim_deviation)
-                if int((stim + stim_deviation) * 10) in test_sounds_dict.keys():
-                    stim += stim_deviation
-                print("original stim:", q.next_stim["intensity"], "stim with deviation:", stim)
+                stim_jitter = np.random.choice(stim_jitters) / 10.0
+                print("stim jitter:", stim_jitter)
+                if int((stim + stim_jitter) * 10) in test_sounds_dict.keys():
+                    stim += stim_jitter
+                print("original stim:", q.next_stim["intensity"], "stim with jitter:", stim)
 
                 # 刺激の単位合わせ
                 stim = int(stim * 10)
