@@ -26,7 +26,7 @@ example: python adaptive_method.py /path/to/SUBJECTS/NAME w012 0 8"""
 
 
 def print_usage():
-    print(usage, sys.stderr)
+    print(usage, file=sys.stderr)
 
 
 def main():
@@ -55,8 +55,8 @@ def main():
         print_usage()
         sys.exit(1)
 
-    TS_dir = subject_dir + "/end_angle_" + start_pos + "/TS/"
-    ANSWER_dir = subject_dir + "/end_angle_" + start_pos + "/ANSWER/"
+    TS_dir = subject_dir + "/angle_" + start_pos + "/TS/"
+    ANSWER_dir = subject_dir + "/angle_" + start_pos + "/ANSWER/"
 
     # 試験音の読み込み
     test_sounds = glob_test_sounds(TS_dir, start_pos, stim_const_val, stim_var)
@@ -78,7 +78,7 @@ def main():
 
     # パラメータドメイン
     mean = intensity.copy()
-    sd = np.arange(0.5, 20, 0.5)
+    sd = np.arange(1, 200)
     # bias (if 2-AFC then 1/2)
     lower_asymptote = 1 / 2
     # rate of mistake
