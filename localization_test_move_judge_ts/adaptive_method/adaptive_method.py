@@ -20,9 +20,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import questplus as qp
 
-usage = """usage: python adaptive_method.py subject_dir stimulation_constant_value start_position test_number
-example: python adaptive_method.py /path/to/SUBJECTS/NAME mt040 45 3
-example: python adaptive_method.py /path/to/SUBJECTS/NAME w012 0 8"""
+usage = """usage: python adaptive_method.py subject_dir stimulation_constant_value angle test_number
+example: python adaptive_method.py /path/to/SUBJECTS/NAME mt0040 0450 3
+example: python adaptive_method.py /path/to/SUBJECTS/NAME w0120 0000 8"""
 
 
 def print_usage():
@@ -39,13 +39,13 @@ def main():
     subject_dir = args[0]
     subject_name = subject_dir.split("/")[-1]
     stim_const_val = args[1]
-    start_pos = args[2]
+    angle = args[2]
     test_number = args[3]
     # --------------- 引数の処理 -------------- #
 
     # 引数の刺激条件のバリデーション
-    mt_pattern = re.compile("mt\d{3}")  # mtXXX (mt + 3桁の数字))
-    w_pattern = re.compile("w\d{3}")
+    mt_pattern = re.compile("mt\d{4}")  # mtXXX (mt + 4桁の数字))
+    w_pattern = re.compile("w\d{4}")
     if mt_pattern.match(stim_const_val):
         stim_var = "w"
     elif w_pattern.match(stim_const_val):
@@ -55,11 +55,11 @@ def main():
         print_usage()
         sys.exit(1)
 
-    TS_dir = subject_dir + "/angle_" + start_pos + "/TS/"
-    ANSWER_dir = subject_dir + "/angle_" + start_pos + "/ANSWER/"
+    TS_dir = subject_dir + "/angle_" + angle + "/TS/"
+    ANSWER_dir = subject_dir + "/angle_" + angle + "/ANSWER/"
 
     # 試験音の読み込み
-    test_sounds = glob_test_sounds(TS_dir, start_pos, stim_const_val, stim_var)
+    test_sounds = glob_test_sounds(TS_dir, angle, stim_const_val, stim_var)
 
     # 取得した試験を[c,cc]の2列に並び替え
     test_sounds = np.array(test_sounds).reshape(-1, 2)
@@ -119,7 +119,7 @@ def main():
     q = qp.QuestPlus(**qp_params)
 
     # QUEST+ パラメータの保存
-    qp_params_file_name = ANSWER_dir + "qp_params_" + subject_name + "_" + stim_const_val + "_" + start_pos + "_" + test_number + ".json"
+    qp_params_file_name = ANSWER_dir + "qp_params_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".json"
     with open(qp_params_file_name, 'w') as f:
         json.dump(qp_params, f, indent=2, cls=JSONEncoderNDArray)
 
@@ -146,7 +146,7 @@ def main():
 
     # 結果記録用データフレーム
     df = pd.DataFrame(
-        columns=["num_trial", "test_sound", "move_width", "move_time", "start_pos", "rotation_direction",
+        columns=["num_trial", "test_sound", "move_width", "move_time", "angle", "rotation_direction",
                  "answer_rotation", "response", "mean_estimation", "sd_estimation", "lapse_rate_estimation",
                  "entropy"])
 
@@ -204,7 +204,7 @@ def main():
             move_width = parameter_divide.group(1).replace("w", "")
             move_time = parameter_divide.group(2).replace("mt", "")
             rotation = parameter_divide.group(3)
-            start_pos = parameter_divide.group(4).split(".")[0]
+            angle = parameter_divide.group(4).split(".")[0]
 
             # 正誤判定
             response = "Correct" if answer_rotation == rotation else "Incorrect"
@@ -218,7 +218,7 @@ def main():
 
             # 結果の書き込み
             series = pd.Series(
-                [num_trial, test_sound, move_width, move_time, start_pos, rotation, answer_rotation, response,
+                [num_trial, test_sound, move_width, move_time, angle, rotation, answer_rotation, response,
                  q.param_estimate["mean"], q.param_estimate["sd"], q.param_estimate["lapse_rate"], q.entropy],
                 index=df.columns)
             df = df.append(series, ignore_index=True)
@@ -260,11 +260,11 @@ def main():
     except KeyboardInterrupt:
         print("KeyboardInterrupt", file=sys.stderr)
     except Exception as e:
-        result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stim_const_val + "_" + start_pos + "_" + test_number + ".csv"
+        result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".csv"
         df.to_csv(result_file_name, index=False)
         raise e
     finally:
-        result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stim_const_val + "_" + start_pos + "_" + test_number + ".csv"
+        result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".csv"
         df.to_csv(result_file_name, index=False)
     # ----------------------------------- 試験 ----------------------------------- #
 
@@ -332,16 +332,16 @@ def subprocess(cmd):
     popen.wait()
 
 
-def glob_test_sounds(target_dir: str, start_pos: str, stim_const_val: str, stim_var: str) -> List[str]:
+def glob_test_sounds(target_dir: str, angle: str, stim_const_val: str, stim_var: str) -> List[str]:
     """指定した条件の試験音をすべて読み込む"""
     if stim_var == "w":
-        # move_judge_w*_mtXX_*_{start_angle}_*.DDB を取得
+        # move_judge_w*_mtXX_*_{angle}_*.DDB を取得
         test_sounds = sorted(
-            glob.glob(f"{target_dir}move_judge_w*_{stim_const_val}_*_{start_pos}.DSB"))
+            glob.glob(f"{target_dir}move_judge_w*_{stim_const_val}_*_{angle}.DSB"))
     else:
-        # move_judge_wXX_mt*_*_{start_angle}_*.DDB を取得
+        # move_judge_wXX_mt*_*_{angle}_*.DDB を取得
         test_sounds = sorted(
-            glob.glob(f"{target_dir}move_judge_{stim_const_val}_mt*_*_{start_pos}.DSB"))
+            glob.glob(f"{target_dir}move_judge_{stim_const_val}_mt*_*_{angle}.DSB"))
 
     # 読み込みのエラー判定
     if len(test_sounds) == 0:
