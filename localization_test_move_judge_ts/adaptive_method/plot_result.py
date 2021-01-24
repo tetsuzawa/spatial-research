@@ -20,7 +20,7 @@ usage = """usage: python plot_result.py <result>.csv <params>.json"""
 
 
 def print_usage():
-    print(usage, sys.stderr)
+    print(usage, file=sys.stderr)
 
 
 def main():
