@@ -78,7 +78,7 @@ def main():
 
     # パラメータドメイン
     mean = intensity.copy()
-    sd = np.arange(1, 200)
+    sd = np.arange(0.5, 20, 0.5)
     # bias (if 2-AFC then 1/2)
     lower_asymptote = 1 / 2
     # rate of mistake
