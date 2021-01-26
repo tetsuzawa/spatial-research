@@ -8,6 +8,7 @@
 # 2020
 # ##################################################
 
+import os
 import sys
 import glob
 import re
@@ -58,6 +59,17 @@ def main():
     TS_dir = subject_dir + "/angle_" + angle + "/TS/"
     ANSWER_dir = subject_dir + "/angle_" + angle + "/ANSWER/"
 
+    # 試験結果の上書き防止
+    result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".csv"
+    if os.path.exists(result_file_name):
+        print("result_file_name already exists. file name:", result_file_name, file=sys.stderr)
+        sys.exit(1)
+
+    qp_params_file_name = ANSWER_dir + "qp_params_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".json"
+    if os.path.exists(qp_params_file_name):
+        print("qp_params_file_name already exists. file name:", qp_params_file_name, file=sys.stderr)
+        sys.exit(1)
+
     # 試験音の読み込み
     test_sounds = glob_test_sounds(TS_dir, angle, stim_const_val, stim_var)
 
@@ -79,6 +91,7 @@ def main():
     # パラメータドメイン
     mean = intensity.copy()
     sd = np.arange(0.5, 20, 0.5)
+    # sd = np.arange(1, 200)
     # bias (if 2-AFC then 1/2)
     lower_asymptote = 1 / 2
     # rate of mistake
@@ -119,7 +132,6 @@ def main():
     q = qp.QuestPlus(**qp_params)
 
     # QUEST+ パラメータの保存
-    qp_params_file_name = ANSWER_dir + "qp_params_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".json"
     with open(qp_params_file_name, 'w') as f:
         json.dump(qp_params, f, indent=2, cls=JSONEncoderNDArray)
 
@@ -223,9 +235,6 @@ def main():
                 index=df.columns)
             df = df.append(series, ignore_index=True)
 
-            # 試行回数をカウント
-            num_trial += 1
-
             # 途中経過の出力
             print("試行回数:", num_trial)
             print("刺激量X:", stim / 10)
@@ -256,15 +265,16 @@ def main():
             axs[2].set_xlabel("intensity")
             axs[2].set_ylabel("Probability")
             axs[2].set_title("PF(x)")
+            
+            # 試行回数をカウント
+            num_trial += 1
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt", file=sys.stderr)
     except Exception as e:
-        result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".csv"
         df.to_csv(result_file_name, index=False)
         raise e
     finally:
-        result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".csv"
         df.to_csv(result_file_name, index=False)
     # ----------------------------------- 試験 ----------------------------------- #
 
