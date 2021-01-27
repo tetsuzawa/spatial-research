@@ -1,0 +1,3 @@
+ARG :=
+echo: 
+	echo ${ARG}
