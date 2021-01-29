@@ -21,6 +21,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import questplus as qp
 
+# import hdi.py from current directory
+from hdi import *
+
 usage = """usage: python adaptive_method.py subject_dir stimulation_constant_value angle test_number
 example: python adaptive_method.py /path/to/SUBJECTS/NAME mt0040 0450 3
 example: python adaptive_method.py /path/to/SUBJECTS/NAME w0120 0000 8"""
@@ -265,7 +268,7 @@ def main():
             axs[2].set_xlabel("intensity")
             axs[2].set_ylabel("Probability")
             axs[2].set_title("PF(x)")
-            
+
             # 試行回数をカウント
             num_trial += 1
 
@@ -278,6 +281,9 @@ def main():
         df.to_csv(result_file_name, index=False)
     # ----------------------------------- 試験 ----------------------------------- #
 
+    # ------------------------------ 試験結果の出力 ------------------------------ #
+    print(f"{num_trial}回目の回答で実験が終了しました.")
+    print("パラメータ推定結果:", q.param_estimate)
     print("\n************************* 試験終了 *************************")
 
     fig.suptitle("Tracks of estimation")
@@ -308,11 +314,36 @@ def main():
     axs[2].set_title("PF(x)")
 
     fig.suptitle("Posterior PDF")
+
+    # HDI (mean)
+    mean_marginal_posterior = q.marginal_posterior["mean"]
+    mean_marginal_posterior = mean_marginal_posterior / sum(mean_marginal_posterior)
+    real_distribution = RealDistribution(mean, mean_marginal_posterior)
+    hdi = HighestPosteriorDensityInterval.calculate(real_distribution, alpha=0.05)
+    idx_lower = np.abs(np.asarray(mean) - hdi.lower_bound).argmin()
+    idx_upper = np.abs(np.asarray(mean) - hdi.upper_bound).argmin()
+    axs[0].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="black")
+    axs[0].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="black")
+
+    print("mean HDI:", hdi.lower_bound, hdi.upper_bound)
+    print(f"surface volume ratio: {sum(mean_marginal_posterior[idx_lower:idx_upper]) / sum(mean_marginal_posterior)}")
+
+    # HDI (sd)
+    sd_marginal_posterior = q.marginal_posterior["sd"]
+    sd_marginal_posterior = sd_marginal_posterior / sum(sd_marginal_posterior)
+    real_distribution = RealDistribution(sd, sd_marginal_posterior)
+    hdi = HighestPosteriorDensityInterval.calculate(real_distribution, alpha=0.05)
+    idx_lower = np.abs(np.asarray(sd) - hdi.lower_bound).argmin()
+    idx_upper = np.abs(np.asarray(sd) - hdi.upper_bound).argmin()
+    axs[1].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="black")
+    axs[1].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="black")
+
+    print("sd HDI:", hdi.lower_bound, hdi.upper_bound)
+    print(f"surface volume ratio: {sum(sd_marginal_posterior[idx_lower:idx_upper]) / sum(sd_marginal_posterior)}")
+    print()
+
     plt.show()
 
-    # ------------------------------ 試験結果の出力 ------------------------------ #
-    print(f"{num_trial}回目の回答で実験が終了しました.")
-    print("パラメータ推定結果:", q.param_estimate)
 
     fig, axs = plt.subplots(1, 2)
 

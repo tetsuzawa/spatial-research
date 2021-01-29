@@ -16,7 +16,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import questplus as qp
 
-# import hpd.py from current directory
+# import hdi.py from current directory
 from hdi import *
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -122,6 +122,10 @@ def main():
         # 試行回数をカウント
         num_trial += 1
 
+    # ------------------------------ 試験結果の出力 ------------------------------ #
+    print(f"{num_trial}回目の回答で実験が終了しました.")
+    print("パラメータ推定結果:", q.param_estimate)
+
     fig.suptitle("Tracks of estimation")
     plt.show()
 
@@ -163,39 +167,36 @@ def main():
     # axs[1].vlines(x=sd_l, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", )
     # axs[1].vlines(x=sd_r, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", )
 
-    # HPD
+    # HDI (mean)
     mean_marginal_posterior = q.marginal_posterior["mean"]
     mean_marginal_posterior = mean_marginal_posterior / sum(mean_marginal_posterior)
     real_distribution = RealDistribution(mean, mean_marginal_posterior)
-    hpd = HighestPosteriorDensityInterval.calculate(real_distribution, alpha=0.05)
-    mean_l, mean_r = hpd.lower_bound, hpd.upper_bound
-    print("mean HPD", mean_l, mean_r)
-    idx_l = np.abs(np.asarray(mean) - mean_l).argmin()
-    idx_r = np.abs(np.asarray(mean) - mean_r).argmin()
-    print(
-        f"sum cdf: {sum(mean_marginal_posterior)}, lower:{sum(mean_marginal_posterior[:idx_l])}, upper:{sum(mean_marginal_posterior[:idx_r])}, confidence surface {sum(mean_marginal_posterior[idx_l:idx_r]) / sum(mean_marginal_posterior)}")
-    axs[0].vlines(x=mean_l, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="black")
-    axs[0].vlines(x=mean_r, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="black")
+    hdi = HighestPosteriorDensityInterval.calculate(real_distribution, alpha=0.05)
+    idx_lower = np.abs(np.asarray(mean) - hdi.lower_bound).argmin()
+    idx_upper = np.abs(np.asarray(mean) - hdi.upper_bound).argmin()
+    axs[0].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="black")
+    axs[0].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="black")
 
+    print("mean HDI", hdi.lower_bound, hdi.upper_bound)
+    print(
+        f"surface volume ratio of HDI (mean): {sum(mean_marginal_posterior[idx_lower:idx_upper]) / sum(mean_marginal_posterior)}")
+
+    # HDI (sd)
     sd_marginal_posterior = q.marginal_posterior["sd"]
     sd_marginal_posterior = sd_marginal_posterior / sum(sd_marginal_posterior)
     real_distribution = RealDistribution(sd, sd_marginal_posterior)
-    hpd = HighestPosteriorDensityInterval.calculate(real_distribution, alpha=0.05)
-    sd_l, sd_r = hpd.lower_bound, hpd.upper_bound
-    print("sd HPD", sd_l, sd_r)
-    idx_l = np.abs(np.asarray(sd) - sd_l).argmin()
-    idx_r = np.abs(np.asarray(sd) - sd_r).argmin()
+    hdi = HighestPosteriorDensityInterval.calculate(real_distribution, alpha=0.05)
+    idx_lower = np.abs(np.asarray(sd) - hdi.lower_bound).argmin()
+    idx_upper = np.abs(np.asarray(sd) - hdi.upper_bound).argmin()
+    axs[1].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="black")
+    axs[1].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="black")
+
+    print("sd HDI", hdi.lower_bound, hdi.upper_bound)
     print(
-        f"sum cdf: {sum(sd_marginal_posterior)}, lower:{sum(sd_marginal_posterior[:idx_l])}, upper:{sum(sd_marginal_posterior[:idx_r])}, confidence surface {sum(sd_marginal_posterior[idx_l:idx_r]) / sum(sd_marginal_posterior)}")
-    axs[1].vlines(x=sd_l, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="black")
-    axs[1].vlines(x=sd_r, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="black")
-
+        f"surface volume ratio of HDI (sd): {sum(sd_marginal_posterior[idx_lower:idx_upper]) / sum(sd_marginal_posterior)}")
     print()
-    plt.show()
 
-    # ------------------------------ 試験結果の出力 ------------------------------ #
-    print(f"{num_trial}回目の回答で実験が終了しました.")
-    print("パラメータ推定結果:", q.param_estimate)
+    plt.show()
 
     fig, axs = plt.subplots(1, 2)
 
