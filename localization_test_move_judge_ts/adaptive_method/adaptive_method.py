@@ -65,13 +65,27 @@ def main():
     # 試験結果の上書き防止
     result_file_name = ANSWER_dir + "answer_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".csv"
     if os.path.exists(result_file_name):
-        print("result_file_name already exists. file name:", result_file_name, file=sys.stderr)
-        sys.exit(1)
+        print(f"`{result_file_name}` already exists", file=sys.stderr)
+        resp = input("Do you want to override? [y/N]: ")
+        if resp != "y":
+            print("exiting...", file=sys.stderr)
+            sys.exit(1)
+        resp = input("Are you sure? [y/N]: ")
+        if resp != "y":
+            print("exiting...", file=sys.stderr)
+            sys.exit(1)
 
     qp_params_file_name = ANSWER_dir + "qp_params_" + subject_name + "_" + stim_const_val + "_" + angle + "_" + test_number + ".json"
     if os.path.exists(qp_params_file_name):
-        print("qp_params_file_name already exists. file name:", qp_params_file_name, file=sys.stderr)
-        sys.exit(1)
+        print(f"`{qp_params_file_name}` already exists", file=sys.stderr)
+        resp = input("Do you want to override? [y/N]: ")
+        if resp != "y":
+            print("exiting...", file=sys.stderr)
+            sys.exit(1)
+        resp = input("Are you sure? [y/N]: ")
+        if resp != "y":
+            print("exiting...", file=sys.stderr)
+            sys.exit(1)
 
     # 試験音の読み込み
     test_sounds = glob_test_sounds(TS_dir, angle, stim_const_val, stim_var)
@@ -343,7 +357,6 @@ def main():
     print()
 
     plt.show()
-
 
     fig, axs = plt.subplots(1, 2)
 
