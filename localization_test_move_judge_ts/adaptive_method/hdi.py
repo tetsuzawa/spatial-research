@@ -43,8 +43,8 @@ class Solver:
     def solve(self) -> float:
         fn = self._generate_objective_func()
         result = scipy.optimize.minimize_scalar(fn,
-                                                bounds=(self.distribution.xs[0],
-                                                        self.distribution.xs[-1]),
+                                                bounds=(self.distribution.coords[0],
+                                                        self.distribution.coords[-1]),
                                                 method='bounded')
         return result.x
 
@@ -66,36 +66,36 @@ class Solver:
 class RealDistribution:
     """確率分布を表すクラス"""
 
-    def __init__(self, xs: List[float], distribution: List[float]):
-        """length of xs and distribution must be same"""
-        if len(xs) != len(distribution):
-            raise ValueError("length of xs and distribution must be same")
+    def __init__(self, coords: List[float], distribution: List[float]):
+        """length of coords and distribution must be same"""
+        if len(coords) != len(distribution):
+            raise ValueError("length of coords and distribution must be same")
 
-        self._xs = xs
+        self._coords = coords
         self._distribution = distribution
 
     @property
-    def xs(self):
-        return self._xs
+    def coords(self):
+        return self._coords
 
     @property
     def distribution(self):
         return self._distribution
 
     def density(self, x: float) -> float:
-        if x < self.xs[0] or self.xs[-1] < x:
-            raise ValueError(f"x must be in [{self.xs[0]}, {self.xs[-1]}]")
-        adjust_val = abs(self.xs[1] - self.xs[0]) / 2
-        diff = np.asarray(self.xs) - (x + adjust_val)
+        if x < self.coords[0] or self.coords[-1] < x:
+            raise ValueError(f"x must be in [{self.coords[0]}, {self.coords[-1]}]")
+        adjust_val = abs(self.coords[1] - self.coords[0]) / 2
+        diff = np.asarray(self.coords) - (x + adjust_val)
         idx = np.abs(diff).argmin()
         return self.distribution[idx]
 
     def cumulative_probability(self, x: float) -> float:
-        if x < self.xs[0] or self.xs[-1] < x:
-            raise ValueError(f"x must be in [{self.xs[0]}, {self.xs[-1]}]")
-        # idx = np.abs(np.asarray(self.xs) - x).argmin()
-        adjust_val = abs(self.xs[1] - self.xs[0]) / 2
-        diff = np.asarray(self.xs) - (x + adjust_val)
+        if x < self.coords[0] or self.coords[-1] < x:
+            raise ValueError(f"x must be in [{self.coords[0]}, {self.coords[-1]}]")
+        # idx = np.abs(np.asarray(self.coords) - x).argmin()
+        adjust_val = abs(self.coords[1] - self.coords[0]) / 2
+        diff = np.asarray(self.coords) - (x + adjust_val)
         idx = np.abs(diff).argmin()
         return sum(self.distribution[:idx])
 
@@ -103,9 +103,9 @@ class RealDistribution:
         if p < 0 or 1 < p:
             raise ValueError(f"p must be in [0, 1]")
 
-        cdf = [self.cumulative_probability(x) for x in self.xs]
+        cdf = [self.cumulative_probability(x) for x in self.coords]
         idx = np.abs(np.asarray(cdf) - p).argmin()
-        return self.xs[idx]
+        return self.coords[idx]
 
     def __len__(self):
         return len(self.distribution)
