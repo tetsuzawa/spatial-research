@@ -150,29 +150,6 @@ def main():
     plt.show()
 
     fig, axs = plt.subplots(2, 2)
-    # axs[0].plot(mean, q.marginal_posterior["mean"], color="blue")
-    # axs[0].set_xlabel("mean")
-    # axs[0].set_ylabel("Probability")
-    # axs[0].set_title("Posterior PDF (μ)")
-    #
-    # axs[1].plot(sd, q.marginal_posterior["sd"], color="green")
-    # axs[1].set_xlabel("sd")
-    # axs[1].set_ylabel("Probability")
-    # axs[1].set_title("Posterior PDF (σ)")
-    #
-    # pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
-    #     intensity=intensity,
-    #     mean=q.param_estimate["mean"],
-    #     sd=q.param_estimate["sd"],
-    #     lapse_rate=q.param_estimate["lapse_rate"],
-    #     lower_asymptote=lower_asymptote,
-    # ))
-    #
-    # axs[2].plot(pf_most_probable, color="red")
-    # axs[2].set_xlabel("intensity")
-    # axs[2].set_ylabel("Probability")
-    # axs[2].set_ylim([0.5, 1.0])
-    # axs[2].set_title("Psychometric Function")
 
     axs[0, 0].plot(mean, q.marginal_posterior["mean"], color="blue")
     axs[0, 0].vlines(x=q.param_estimate["mean"], ymin=0, ymax=np.max(q.marginal_posterior["mean"]), linestyles="--",
@@ -210,18 +187,6 @@ def main():
     axs[1, 1].set_ylabel("Probability")
     axs[1, 1].set_title("Posterior PDF (λ)")
 
-    # 当裾
-    # mean_marginal_posterior = q.marginal_posterior["mean"]
-    # mean_l, mean_r = confidence_interval(mean, mean_marginal_posterior)
-    # print(mean_l, mean_r)
-    # axs[0].vlines(x=mean_l, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", )
-    # axs[0].vlines(x=mean_r, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", )
-    # sd_marginal_posterior = q.marginal_posterior["sd"]
-    # sd_l, sd_r = confidence_interval(sd, sd_marginal_posterior)
-    # print(sd_l, sd_r)
-    # axs[1].vlines(x=sd_l, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", )
-    # axs[1].vlines(x=sd_r, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", )
-
     # HDI (mean)
     mean_marginal_posterior = q.marginal_posterior["mean"]
     mean_marginal_posterior = mean_marginal_posterior / sum(mean_marginal_posterior)
@@ -254,7 +219,7 @@ def main():
 
     print("lapse rate HDI", hdi.lower_bound, hdi.upper_bound)
 
-    # ----------------------------------------------------------------------------
+    # plot credible interval of PF
     pfs = []
     for m in mean_hdi:
         for s in sd_hdi:
@@ -268,17 +233,11 @@ def main():
                 ))
                 pfs.append(pf.values.tolist())
 
-                # axs[1, 0].plot(intensity, pf, label=f"μ={m}, s={s}, l={l}")
     pf_lower = np.amin(pfs, axis=0)
     pf_upper = np.amax(pfs, axis=0)
     axs[1, 0].plot(intensity, pf_lower, linestyle="--", color="dimgrey")
     axs[1, 0].plot(intensity, pf_upper, linestyle="--", color="dimgrey", label="95% Credible interval")
-    # ----------------------------------------------------------------------------
-
-    # axs[0, 0].legend()
-    # axs[0, 1].legend()
     axs[1, 0].legend()
-    # axs[1, 1].legend()
 
     plt.tight_layout()
     fig.savefig(f"estimation_{result_file_name.split('.')[0]}.png")
