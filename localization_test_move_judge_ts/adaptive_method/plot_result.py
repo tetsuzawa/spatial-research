@@ -11,15 +11,27 @@
 import sys
 import json
 import signal
+from typing import List
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import questplus as qp
+import arviz as az
+from scipy import interpolate
 
 # import hdi.py from current directory
 from hdi import *
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+plt.rcParams['xtick.direction'] = 'in'
+plt.rcParams['ytick.direction'] = 'in'
+plt.rcParams['xtick.top'] = True
+plt.rcParams['ytick.right'] = True
+plt.rcParams['font.size'] = 11
+plt.rcParams['figure.figsize'] = (10, 6)
+plt.rcParams['figure.dpi'] = 200
 
 usage = """usage: python plot_result.py <result>.csv <params>.json"""
 
@@ -75,7 +87,7 @@ def main():
     entropy_history = []
 
     # 推定過程表示用のfigure
-    fig, axs = plt.subplots(1, 3)
+    fig, axs = plt.subplots(2, 2)
 
     while num_trial <= num_trials:
         # エントロピーを内部で計算
@@ -97,15 +109,15 @@ def main():
         q.update(stim=dict(intensity=float(stim / 10)), outcome=dict(response=result))
 
         # 途中経過のプロット
-        axs[0].plot(mean, q.marginal_posterior["mean"], color="blue", alpha=num_trial / num_trials)
-        axs[0].set_xlabel("mean")
-        axs[0].set_ylabel("Probability")
-        axs[0].set_title("Posterior PDF (mean)")
+        axs[0, 0].plot(mean, q.marginal_posterior["mean"], color="blue", alpha=num_trial / num_trials)
+        axs[0, 0].set_xlabel("Mean μ")
+        axs[0, 0].set_ylabel("Probability")
+        axs[0, 0].set_title("Posterior PDF (μ)")
 
-        axs[1].plot(sd, q.marginal_posterior["sd"], color="green", alpha=num_trial / num_trials)
-        axs[1].set_xlabel("sd")
-        axs[1].set_ylabel("Probability")
-        axs[1].set_title("Posterior PDF (sd)")
+        axs[0, 1].plot(sd, q.marginal_posterior["sd"], color="green", alpha=num_trial / num_trials)
+        axs[0, 1].set_xlabel("Standard deviation σ")
+        axs[0, 1].set_ylabel("Probability")
+        axs[0, 1].set_title("Posterior PDF (sd)")
 
         pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
             intensity=intensity,
@@ -114,10 +126,16 @@ def main():
             lapse_rate=q.param_estimate["lapse_rate"],
             lower_asymptote=lower_asymptote,
         ))
-        axs[2].plot(pf_most_probable, color="red", alpha=num_trial / num_trials)
-        axs[2].set_xlabel("intensity")
-        axs[2].set_ylabel("Probability")
-        axs[2].set_title("PF(x)")
+        axs[1, 0].plot(pf_most_probable, color="red", alpha=num_trial / num_trials)
+        axs[1, 0].set_xlabel("Intensity")
+        axs[1, 0].set_ylabel("Probability")
+        axs[1, 0].set_ylim([0.5, 1.0])
+        axs[1, 0].set_title("Psychometric Function")
+
+        axs[1, 1].plot(lapse_rate, q.marginal_posterior["lapse_rate"], color="yellow", alpha=num_trial / num_trials)
+        axs[1, 1].set_xlabel("Lapse rate λ")
+        axs[1, 1].set_ylabel("Probability")
+        axs[1, 1].set_title("Posterior PDF (λ)")
 
         # 試行回数をカウント
         num_trial += 1
@@ -127,18 +145,48 @@ def main():
     print("パラメータ推定結果:", q.param_estimate)
 
     fig.suptitle("Tracks of estimation")
+    plt.tight_layout()
+    fig.savefig(f"track_{result_file_name.split('.')[0]}.png")
     plt.show()
 
-    fig, axs = plt.subplots(1, 3)
-    axs[0].plot(mean, q.marginal_posterior["mean"], color="blue")
-    axs[0].set_xlabel("mean")
-    axs[0].set_ylabel("Probability")
-    axs[0].set_title("Posterior PDF (mean)")
+    fig, axs = plt.subplots(2, 2)
+    # axs[0].plot(mean, q.marginal_posterior["mean"], color="blue")
+    # axs[0].set_xlabel("mean")
+    # axs[0].set_ylabel("Probability")
+    # axs[0].set_title("Posterior PDF (μ)")
+    #
+    # axs[1].plot(sd, q.marginal_posterior["sd"], color="green")
+    # axs[1].set_xlabel("sd")
+    # axs[1].set_ylabel("Probability")
+    # axs[1].set_title("Posterior PDF (σ)")
+    #
+    # pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
+    #     intensity=intensity,
+    #     mean=q.param_estimate["mean"],
+    #     sd=q.param_estimate["sd"],
+    #     lapse_rate=q.param_estimate["lapse_rate"],
+    #     lower_asymptote=lower_asymptote,
+    # ))
+    #
+    # axs[2].plot(pf_most_probable, color="red")
+    # axs[2].set_xlabel("intensity")
+    # axs[2].set_ylabel("Probability")
+    # axs[2].set_ylim([0.5, 1.0])
+    # axs[2].set_title("Psychometric Function")
 
-    axs[1].plot(sd, q.marginal_posterior["sd"], color="green")
-    axs[1].set_xlabel("sd")
-    axs[1].set_ylabel("Probability")
-    axs[1].set_title("Posterior PDF (sd)")
+    axs[0, 0].plot(mean, q.marginal_posterior["mean"], color="blue")
+    axs[0, 0].vlines(x=q.param_estimate["mean"], ymin=0, ymax=np.max(q.marginal_posterior["mean"]), linestyles="--",
+                     color="red")
+    axs[0, 0].set_xlabel("Mean μ")
+    axs[0, 0].set_ylabel("Probability")
+    axs[0, 0].set_title("Posterior PDF (μ)")
+
+    axs[0, 1].plot(sd, q.marginal_posterior["sd"], color="green")
+    axs[0, 1].vlines(x=q.param_estimate["sd"], ymin=0, ymax=np.max(q.marginal_posterior["sd"]), linestyles="--",
+                     color="red")
+    axs[0, 1].set_xlabel("Standard deviation σ")
+    axs[0, 1].set_ylabel("Probability")
+    axs[0, 1].set_title("Posterior PDF (σ)")
 
     pf_most_probable = np.squeeze(qp.qp.psychometric_function.norm_cdf(
         intensity=intensity,
@@ -148,12 +196,19 @@ def main():
         lower_asymptote=lower_asymptote,
     ))
 
-    axs[2].plot(pf_most_probable, color="red")
-    axs[2].set_xlabel("intensity")
-    axs[2].set_ylabel("Probability")
-    axs[2].set_title("PF(x)")
+    axs[1, 0].plot(pf_most_probable, color="red", label="Estimated PF")
+    axs[1, 0].set_xlabel("Intensity")
+    axs[1, 0].set_ylabel("Probability")
+    axs[1, 0].set_ylim([0.5, 1.0])
+    axs[1, 0].set_title("Psychometric Function")
 
-    fig.suptitle("Posterior PDF")
+    axs[1, 1].plot(lapse_rate, q.marginal_posterior["lapse_rate"], color="yellow")
+    axs[1, 1].vlines(x=q.param_estimate["lapse_rate"], ymin=0, ymax=np.max(q.marginal_posterior["lapse_rate"]),
+                     linestyles="--",
+                     color="red")
+    axs[1, 1].set_xlabel("Lapse rate λ")
+    axs[1, 1].set_ylabel("Probability")
+    axs[1, 1].set_title("Posterior PDF (λ)")
 
     # 当裾
     # mean_marginal_posterior = q.marginal_posterior["mean"]
@@ -170,47 +225,80 @@ def main():
     # HDI (mean)
     mean_marginal_posterior = q.marginal_posterior["mean"]
     mean_marginal_posterior = mean_marginal_posterior / sum(mean_marginal_posterior)
-    real_distribution = RealDistribution(mean, mean_marginal_posterior)
-    hdi = HighestPosteriorDensityInterval.calculate(real_distribution, alpha=0.05)
-    idx_lower = np.abs(np.asarray(mean) - hdi.lower_bound).argmin()
-    idx_upper = np.abs(np.asarray(mean) - hdi.upper_bound).argmin()
-    axs[0].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="black")
-    axs[0].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="black")
+    hdi = find_hdi(mean, q.marginal_posterior["mean"].tolist())
+    axs[0, 0].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="dimgrey")
+    axs[0, 0].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(mean_marginal_posterior), linestyles="--", color="dimgrey")
+    mean_hdi = hdi.tolist()
 
     print("mean HDI", hdi.lower_bound, hdi.upper_bound)
-    print(
-        f"surface volume ratio of HDI (mean): {sum(mean_marginal_posterior[idx_lower:idx_upper]) / sum(mean_marginal_posterior)}")
 
     # HDI (sd)
     sd_marginal_posterior = q.marginal_posterior["sd"]
     sd_marginal_posterior = sd_marginal_posterior / sum(sd_marginal_posterior)
-    real_distribution = RealDistribution(sd, sd_marginal_posterior)
-    hdi = HighestPosteriorDensityInterval.calculate(real_distribution, alpha=0.05)
-    idx_lower = np.abs(np.asarray(sd) - hdi.lower_bound).argmin()
-    idx_upper = np.abs(np.asarray(sd) - hdi.upper_bound).argmin()
-    axs[1].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="black")
-    axs[1].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="black")
+    hdi = find_hdi(sd, q.marginal_posterior["sd"].tolist())
+    axs[0, 1].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="dimgrey")
+    axs[0, 1].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(sd_marginal_posterior), linestyles="--", color="dimgrey")
+    sd_hdi = hdi.tolist()
 
     print("sd HDI", hdi.lower_bound, hdi.upper_bound)
-    print(
-        f"surface volume ratio of HDI (sd): {sum(sd_marginal_posterior[idx_lower:idx_upper]) / sum(sd_marginal_posterior)}")
-    print()
 
+    # HDI (lapse rate)
+    lapse_rate_marginal_posterior = q.marginal_posterior["lapse_rate"]
+    lapse_rate_marginal_posterior = lapse_rate_marginal_posterior / sum(lapse_rate_marginal_posterior)
+    hdi = find_hdi(lapse_rate, q.marginal_posterior["lapse_rate"].tolist())
+    axs[1, 1].vlines(x=hdi.upper_bound, ymin=0, ymax=np.max(lapse_rate_marginal_posterior), linestyles="--",
+                     color="dimgrey")
+    axs[1, 1].vlines(x=hdi.lower_bound, ymin=0, ymax=np.max(lapse_rate_marginal_posterior), linestyles="--",
+                     color="dimgrey")
+    lapse_rate_hdi = hdi.tolist()
+
+    print("lapse rate HDI", hdi.lower_bound, hdi.upper_bound)
+
+    # ----------------------------------------------------------------------------
+    pfs = []
+    for m in mean_hdi:
+        for s in sd_hdi:
+            for l in lapse_rate_hdi:
+                pf = np.squeeze(qp.qp.psychometric_function.norm_cdf(
+                    intensity=intensity,
+                    mean=m,
+                    sd=s,
+                    lapse_rate=l,
+                    lower_asymptote=lower_asymptote,
+                ))
+                pfs.append(pf.values.tolist())
+
+                # axs[1, 0].plot(intensity, pf, label=f"μ={m}, s={s}, l={l}")
+    pf_lower = np.amin(pfs, axis=0)
+    pf_upper = np.amax(pfs, axis=0)
+    axs[1, 0].plot(intensity, pf_lower, linestyle="--", color="dimgrey")
+    axs[1, 0].plot(intensity, pf_upper, linestyle="--", color="dimgrey", label="95% Credible interval")
+    # ----------------------------------------------------------------------------
+
+    # axs[0, 0].legend()
+    # axs[0, 1].legend()
+    axs[1, 0].legend()
+    # axs[1, 1].legend()
+
+    plt.tight_layout()
+    fig.savefig(f"estimation_{result_file_name.split('.')[0]}.png")
     plt.show()
 
     fig, axs = plt.subplots(1, 2)
 
     # 刺激量の軌跡
     axs[0].plot(list(range(1, len(stim_history) + 1)), stim_history, "o-")
-    axs[0].set_xlabel("Numbers of trials T")
-    axs[0].set_ylabel("Stimulation level X")
-    axs[0].set_title("Path of stimulation level")
+    axs[0].set_xlabel("Numbers of trials")
+    axs[0].set_ylabel("Intensity")
+    axs[0].set_title("Track of intensity")
 
     # エントロピーの軌跡
     axs[1].plot(list(range(1, len(entropy_history) + 1)), entropy_history, "o-")
-    axs[1].set_xlabel("Numbers of trials T")
+    axs[1].set_xlabel("Numbers of trials")
     axs[1].set_ylabel("Entropy")
-    axs[1].set_title("Path of Entropy")
+    axs[1].set_title("Track of entropy")
+    plt.tight_layout()
+    fig.savefig(f"entropy_{result_file_name.split('.')[0]}.png")
     plt.show()
 
     print("stim history", stim_history)
@@ -219,36 +307,18 @@ def main():
     # ------------------------------ 試験結果の出力 ------------------------------ #
 
 
-# def confidence_interval(xs: List[int], pdf: List[float]) -> (int, int):
-#     if len(xs) != len(pdf):
-#         raise ValueError("length of xs and pdf must be same")
-#     # cdf = []
-#     # for i, v in enumerate(pdf):
-#     #     if i == 0:
-#     #         cdf.append(v)
-#     #         continue
-#     #     cdf.append(cdf[i - 1] + v)
-#
-#     pdf_integral = sum(pdf)
-#     print(pdf_integral)
-#     pdf_sum = 0
-#     l, r = -1, -1
-#     for i, v in enumerate(pdf):
-#         if pdf_sum + v > pdf_integral * 0.025 and l < 0:
-#             pdf_interpolated = np.linspace(pdf_sum, pdf_sum + v, 100)
-#             for j, vv in enumerate(pdf_interpolated):
-#                 if vv > pdf_integral * 0.025:
-#                     l = xs[i - 1] + (xs[i] - xs[i - 1]) * j / 100
-#                     break
-#         if pdf_sum + v > pdf_integral * 0.975 and r < 0:
-#             pdf_interpolated = np.linspace(pdf_sum, pdf_sum + v, 100)
-#             for j, vv in enumerate(pdf_interpolated):
-#                 if vv > pdf_integral * 0.975:
-#                     r = xs[i - 1] + (xs[i] - xs[i - 1]) * j / 100
-#         pdf_sum += v
-#     if l < 0 or r < 0:
-#         raise ValueError("failed")
-#     return l, r
+def find_hdi(xs: List, probability: List, samples=10000) -> HighestPosteriorDensityInterval:
+    if len(xs) != len(probability):
+        raise ValueError(f"length of xs and probability must same. xs:{len(xs)}, probability:{len(probability)}")
+
+    latent_xs = np.linspace(min(xs), max(xs), 1000)
+    fitted_probability_func = interpolate.interp1d(xs, probability)
+    fitted_probability = fitted_probability_func(latent_xs)
+    fitted_probability = fitted_probability / fitted_probability.sum()
+    # data = np.random.choice(a=xs, size=samples, p=probability)
+    data = np.random.choice(a=latent_xs, size=samples, p=fitted_probability)
+    hdi = az.hdi(data, hdi_prob=0.95)
+    return HighestPosteriorDensityInterval(*hdi)
 
 
 if __name__ == "__main__":
